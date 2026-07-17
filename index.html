@@ -332,6 +332,7 @@ function App() {
   const seeded = useMemo(seedData, []);
   const [role, setRole] = useState("shop");
   const [shopTab, setShopTab] = useState("list");
+  const [entered, setEntered] = useState(false);
   const [auth, setAuth] = useState({
     partner: false,
     admin: false
@@ -490,7 +491,7 @@ function App() {
       fontSize: 12
     }
   }, "—");
-  const fakeUrl = role === "shop" ? `https://shop.aishitoto.jp/${shopTab === "mypage" ? "mypage" : refCode ? `?ref=${refCode}` : ""}` : role === "partner" ? "https://partner.aishitoto.jp/" : "https://admin.aishitoto.jp/";
+  const fakeUrl = role === "shop" ? entered ? `https://shop.aishitoto.jp/${shopTab === "mypage" ? "mypage" : refCode ? `?ref=${refCode}` : ""}` : "(紹介リンクが届いたメッセージ画面のイメージ)" : role === "partner" ? "https://partner.aishitoto.jp/" : "https://admin.aishitoto.jp/";
   const LoginGate = ({
     kind
   }) => /*#__PURE__*/React.createElement(Card, {
@@ -690,11 +691,107 @@ function App() {
       margin: "0 auto",
       padding: "20px 18px 60px"
     }
-  }, role === "shop" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, role === "shop" && !entered && /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: 540,
+      margin: "14px auto"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: C.sub,
+      marginBottom: 12,
+      textAlign: "center",
+      lineHeight: 1.7
+    }
+  }, "お客様の体験は「知人のパートナーから紹介リンクが届く」ところから始まります。", /*#__PURE__*/React.createElement("br", null), "リンクをタップしてみてください。"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#87A6CE",
+      borderRadius: 18,
+      padding: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#fff",
+      textAlign: "center",
+      marginBottom: 12,
+      opacity: 0.9
+    }
+  }, "メッセージアプリ(イメージ)"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
-      marginBottom: 16
+      alignItems: "flex-end"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 38,
+      height: 38,
+      borderRadius: "50%",
+      background: C.beniPale,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 17,
+      flexShrink: 0
+    }
+  }, "👩"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#fff",
+      marginBottom: 3
+    }
+  }, "山田さん"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: "14px 14px 14px 4px",
+      padding: "11px 14px",
+      fontSize: 13,
+      lineHeight: 1.8,
+      maxWidth: 360
+    }
+  }, "このあいだ話してたコラーゲンゼリー、ここから買えるよ🎁 私の紹介リンクだから、開いてそのまま買うだけで大丈夫〜", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setRefCode("P0102");
+      setEntered(true);
+      say("山田さんのご紹介が自動で記録されました。コードの入力は不要です");
+    },
+    style: {
+      background: "none",
+      border: "none",
+      color: "#2E6BD8",
+      textDecoration: "underline",
+      fontSize: 13,
+      cursor: "pointer",
+      padding: 0,
+      wordBreak: "break-all",
+      textAlign: "left"
+    }
+  }, "https://shop.aishitoto.jp/?ref=P0102"))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      marginTop: 14
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setEntered(true);
+    },
+    style: {
+      border: `1px solid ${C.line}`,
+      background: "#fff",
+      color: C.sub,
+      borderRadius: 8,
+      padding: "9px 16px",
+      fontSize: 12,
+      cursor: "pointer"
+    }
+  }, "紹介リンクを使わず、通常のお客様として開く"))), role === "shop" && entered && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginBottom: 16,
+      alignItems: "center"
     }
   }, [["list", "商品一覧"], ["mypage", "マイページ"]].map(([k, label]) => /*#__PURE__*/React.createElement("button", {
     key: k,
@@ -709,73 +806,33 @@ function App() {
       background: shopTab === k ? C.beniPale : "#fff",
       color: shopTab === k ? C.beniDeep : C.sub
     }
-  }, label))), shopTab === "list" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Card, {
-    style: {
-      marginBottom: 16,
-      background: refCode ? C.greenPale : C.goldPale,
-      border: "none"
-    }
-  }, !refCode && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontWeight: 700,
-      fontSize: 14,
-      marginBottom: 4
-    }
-  }, "🎁 ご紹介の体験(デモ)"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      color: C.ink,
-      lineHeight: 1.7,
-      marginBottom: 10
-    }
-  }, "実際のお客様は、知人のパートナーからLINEやSNSで届く", /*#__PURE__*/React.createElement("b", null, "紹介リンクをタップするだけ"), "。 コードの入力は一切ありません。ここではその「リンクを開いた瞬間」を体験できます。"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8,
-      flexWrap: "wrap"
-    }
-  }, PARTNERS.slice(0, 2).map(p => /*#__PURE__*/React.createElement("button", {
-    key: p.code,
+  }, label)), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
-      setRefCode(p.code);
-      say(`${DEMO_NAMES[p.code]}からの紹介リンクを開きました。以降のお買い物が自動で${DEMO_NAMES[p.code]}のご紹介になります`);
+      setEntered(false);
+      setRefCode(null);
+      setShopTab("list");
     },
     style: {
+      marginLeft: "auto",
       border: "none",
-      color: "#fff",
-      background: C.beni,
-      borderRadius: 8,
-      padding: "10px 16px",
-      fontSize: 13,
-      fontWeight: 700,
-      cursor: "pointer"
+      background: "none",
+      color: C.gray,
+      fontSize: 12,
+      cursor: "pointer",
+      textDecoration: "underline"
     }
-  }, DEMO_NAMES[p.code], "から届いた紹介リンクを開く")))), refCode && /*#__PURE__*/React.createElement("div", {
+  }, "体験を最初からやり直す")), shopTab === "list" && /*#__PURE__*/React.createElement(React.Fragment, null, refCode && /*#__PURE__*/React.createElement(Card, {
     style: {
-      display: "flex",
-      gap: 12,
-      alignItems: "center",
-      flexWrap: "wrap"
+      marginBottom: 16,
+      background: C.greenPale,
+      border: "none"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 13,
-      flex: 1,
-      minWidth: 220,
       lineHeight: 1.7
     }
-  }, /*#__PURE__*/React.createElement("b", null, DEMO_NAMES[refCode] || "パートナー", "のご紹介"), "でお買い物中です。 このままお買い物いただくだけで、ご紹介が自動で反映されます。お手続きは何もいりません。"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setRefCode(null),
-    style: {
-      border: `1px solid ${C.gray}`,
-      color: C.sub,
-      background: "#fff",
-      borderRadius: 8,
-      padding: "7px 12px",
-      fontSize: 12,
-      cursor: "pointer"
-    }
-  }, "紹介なしの状態に戻す(デモ)"))), /*#__PURE__*/React.createElement(Card, {
+  }, "🎁 ", /*#__PURE__*/React.createElement("b", null, DEMO_NAMES[refCode] || "パートナー", "のご紹介"), "でお買い物いただいています。このままお買い物いただくだけでご紹介が反映されます。お手続きは不要です。")), /*#__PURE__*/React.createElement(Card, {
     style: {
       marginBottom: 14,
       padding: 14
