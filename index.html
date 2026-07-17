@@ -330,6 +330,7 @@ function App() {
   const [cemail, setCemail] = useState("");
   const [notifyEmail, setNotifyEmail] = useState("order@aishitoto.co.jp");
   const [orderDetail, setOrderDetail] = useState(null);
+  const [csvMonth, setCsvMonth] = useState("2026-07");
   const [auth, setAuth] = useState({
     partner: false,
     admin: false
@@ -393,6 +394,29 @@ function App() {
     say(refCode ? `ご注文を承りました。注文情報を ${notifyEmail} へ自動送信し、パートナー ${refCode} の報酬 ${yen(p.price * commRate)} を計上しました(デモ)` : `ご注文を承りました。注文情報を ${notifyEmail} へ自動送信しました(デモ)`);
   };
   const mailText = o => ["件名: 【受注通知】#" + o.id + " " + o.product + "(" + o.type + ")", "宛先: " + notifyEmail, "────────────────────", "注文番号: #" + o.id, "注文月: " + o.month, "商品: " + o.product, "種別: " + o.type + (o.subMonth ? "(" + o.subMonth + "ヶ月目)" : ""), "金額: " + yen(o.price), "紹介パートナー: " + (o.partner || "なし"), "────────────────────", "■お届け先", o.shipTo ? ["お名前: " + o.shipTo.name, "郵便番号: " + (o.shipTo.zip || "-"), "ご住所: " + o.shipTo.addr, "お電話: " + (o.shipTo.phone || "-"), "メール: " + (o.shipTo.email || "-")].join("\n") : "(デモ初期データのため未登録)", "────────────────────", "※このメールをもとに基幹システムへ受注登録をお願いします。"].join("\n");
+  const downloadCsv = () => {
+    const target = orders.filter(o => csvMonth === "all" || o.month === csvMonth);
+    if (!target.length) return say("対象期間の受注がありません");
+    const esc = v => {
+      const s = String(v == null ? "" : v);
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const header = ["注文番号", "注文月", "商品名", "種別", "定期回数", "金額", "紹介パートナーコード", "お名前", "郵便番号", "住所", "電話番号", "メールアドレス", "報酬状態"];
+    const rows = target.map(o => [o.id, o.month, o.product, o.type, o.subMonth || "", o.price, o.partner || "", o.shipTo ? o.shipTo.name : "", o.shipTo ? o.shipTo.zip : "", o.shipTo ? o.shipTo.addr : "", o.shipTo ? o.shipTo.phone : "", o.shipTo ? o.shipTo.email : "", o.commStatus || ""].map(esc).join(","));
+    const csv = "\uFEFF" + header.join(",") + "\n" + rows.join("\n");
+    const blob = new Blob([csv], {
+      type: "text/csv;charset=utf-8"
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "受注データ_" + (csvMonth === "all" ? "全期間" : csvMonth) + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    say(target.length + "件の受注をCSVでダウンロードしました。基幹システムに取り込んでください");
+  };
   const cancelSub = subId => {
     setSubs(s => s.map(x => x.id === subId ? {
       ...x,
@@ -1669,7 +1693,51 @@ function App() {
       color: C.sub,
       marginTop: 8
     }
-  }, "注文が入るたびに、このアドレスへ注文情報(商品・金額・お届け先・紹介パートナー)が自動送信されます。届いたメールをもとに基幹システムへ受注登録する運用を想定。複数アドレスへの同時送信も可能です。")), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(SectionTitle, null, "注文・報酬台帳"), /*#__PURE__*/React.createElement("div", {
+  }, "注文が入るたびに、このアドレスへ注文情報(商品・金額・お届け先・紹介パートナー)が自動送信されます。届いたメールをもとに基幹システムへ受注登録する運用を想定。複数アドレスへの同時送信も可能です。")), /*#__PURE__*/React.createElement(Card, {
+    style: {
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement(SectionTitle, null, "基幹システム連携(CSV)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      alignItems: "center",
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("select", {
+    value: csvMonth,
+    onChange: e => setCsvMonth(e.target.value),
+    style: {
+      border: `1px solid ${C.line}`,
+      borderRadius: 8,
+      padding: "9px 10px",
+      fontSize: 13,
+      background: "#fff"
+    }
+  }, [...new Set(orders.map(o => o.month))].sort().map(m => /*#__PURE__*/React.createElement("option", {
+    key: m,
+    value: m
+  }, m)), /*#__PURE__*/React.createElement("option", {
+    value: "all"
+  }, "全期間")), /*#__PURE__*/React.createElement("button", {
+    onClick: downloadCsv,
+    style: {
+      background: C.green,
+      color: "#fff",
+      border: "none",
+      borderRadius: 8,
+      padding: "10px 18px",
+      fontWeight: 700,
+      fontSize: 13,
+      cursor: "pointer"
+    }
+  }, "受注CSVをダウンロード")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.sub,
+      marginTop: 8
+    }
+  }, "選択期間の受注(お届け先つき)をCSVで出力します。基幹システムの取込画面にそのまま読み込む運用を想定。本番では列の並び・文字コード(Shift_JIS等)・自動連携(毎朝の自動出力など)を基幹の仕様に合わせて調整します。")), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(SectionTitle, null, "注文・報酬台帳"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12,
       color: C.sub,
