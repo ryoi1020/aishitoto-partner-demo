@@ -322,6 +322,14 @@ function App() {
   const [role, setRole] = useState("shop");
   const [shopTab, setShopTab] = useState("list");
   const [entered, setEntered] = useState(false);
+  const [checkout, setCheckout] = useState(null);
+  const [cname, setCname] = useState("");
+  const [czip, setCzip] = useState("");
+  const [caddr, setCaddr] = useState("");
+  const [cphone, setCphone] = useState("");
+  const [cemail, setCemail] = useState("");
+  const [notifyEmail, setNotifyEmail] = useState("order@aishitoto.co.jp");
+  const [orderDetail, setOrderDetail] = useState(null);
   const [auth, setAuth] = useState({
     partner: false,
     admin: false
@@ -346,7 +354,15 @@ function App() {
     setToast(t);
     setTimeout(() => setToast(null), 2800);
   };
-  const buy = (p, asSub) => {
+  const buy = (p, asSub) => setCheckout({
+    p: p,
+    asSub: asSub
+  });
+  const confirmPurchase = () => {
+    if (!checkout) return;
+    if (!cname.trim() || !caddr.trim()) return say("お名前とご住所をご入力ください");
+    const p = checkout.p,
+      asSub = checkout.asSub;
     setOrders(o => [...o, {
       id: ++seq,
       productId: p.id,
@@ -357,7 +373,14 @@ function App() {
       type: asSub ? "定期" : "単品",
       subMonth: asSub ? 1 : null,
       customer: "you",
-      commStatus: refCode ? "未確定" : null
+      commStatus: refCode ? "未確定" : null,
+      shipTo: {
+        name: cname.trim(),
+        zip: czip.trim(),
+        addr: caddr.trim(),
+        phone: cphone.trim(),
+        email: cemail.trim()
+      }
     }]);
     if (asSub) setSubs(s => [...s, {
       id: s.length + 100,
@@ -366,8 +389,10 @@ function App() {
       active: true,
       refBy: refCode
     }]);
-    say(refCode ? `購入完了(デモ)。パートナー ${refCode} のご紹介として報酬 ${yen(p.price * commRate)} を計上しました(未確定)` : "購入完了(デモ)。紹介リンク経由ではないため報酬計上はありません");
+    setCheckout(null);
+    say(refCode ? `ご注文を承りました。注文情報を ${notifyEmail} へ自動送信し、パートナー ${refCode} の報酬 ${yen(p.price * commRate)} を計上しました(デモ)` : `ご注文を承りました。注文情報を ${notifyEmail} へ自動送信しました(デモ)`);
   };
+  const mailText = o => ["件名: 【受注通知】#" + o.id + " " + o.product + "(" + o.type + ")", "宛先: " + notifyEmail, "────────────────────", "注文番号: #" + o.id, "注文月: " + o.month, "商品: " + o.product, "種別: " + o.type + (o.subMonth ? "(" + o.subMonth + "ヶ月目)" : ""), "金額: " + yen(o.price), "紹介パートナー: " + (o.partner || "なし"), "────────────────────", "■お届け先", o.shipTo ? ["お名前: " + o.shipTo.name, "郵便番号: " + (o.shipTo.zip || "-"), "ご住所: " + o.shipTo.addr, "お電話: " + (o.shipTo.phone || "-"), "メール: " + (o.shipTo.email || "-")].join("\n") : "(デモ初期データのため未登録)", "────────────────────", "※このメールをもとに基幹システムへ受注登録をお願いします。"].join("\n");
   const cancelSub = subId => {
     setSubs(s => s.map(x => x.id === subId ? {
       ...x,
@@ -1612,7 +1637,45 @@ function App() {
       fontWeight: 700,
       cursor: "pointer"
     }
-  }, r.active ? "無効にする" : "有効にする"))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(SectionTitle, null, "注文・報酬台帳"), /*#__PURE__*/React.createElement("div", {
+  }, r.active ? "無効にする" : "有効にする"))))), /*#__PURE__*/React.createElement(Card, {
+    style: {
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement(SectionTitle, null, "受注通知メールの設定"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      alignItems: "center",
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13
+    }
+  }, "通知先アドレス:"), /*#__PURE__*/React.createElement("input", {
+    value: notifyEmail,
+    onChange: e => setNotifyEmail(e.target.value),
+    style: {
+      border: `1px solid ${C.line}`,
+      borderRadius: 8,
+      padding: "9px 12px",
+      fontSize: 13,
+      flex: 1,
+      minWidth: 220
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.sub,
+      marginTop: 8
+    }
+  }, "注文が入るたびに、このアドレスへ注文情報(商品・金額・お届け先・紹介パートナー)が自動送信されます。届いたメールをもとに基幹システムへ受注登録する運用を想定。複数アドレスへの同時送信も可能です。")), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(SectionTitle, null, "注文・報酬台帳"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.sub,
+      marginBottom: 8
+    }
+  }, "行をタップすると、お届け先の詳細と送信される通知メールを確認できます。"), /*#__PURE__*/React.createElement("div", {
     style: {
       overflowX: "auto"
     }
@@ -1636,7 +1699,11 @@ function App() {
       fontWeight: 700
     }
   }, h)))), /*#__PURE__*/React.createElement("tbody", null, orders.slice().reverse().map(o => /*#__PURE__*/React.createElement("tr", {
-    key: o.id
+    key: o.id,
+    onClick: () => setOrderDetail(o),
+    style: {
+      cursor: "pointer"
+    }
   }, /*#__PURE__*/React.createElement("td", {
     style: {
       padding: "7px 8px",
@@ -1672,7 +1739,191 @@ function App() {
       padding: "7px 8px",
       borderBottom: `1px solid ${C.line}`
     }
-  }, statusChip(o.commStatus)))))))))), toast && /*#__PURE__*/React.createElement("div", {
+  }, statusChip(o.commStatus)))))))))), checkout && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.45)",
+      zIndex: 40,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: 16,
+      padding: 20,
+      width: "100%",
+      maxWidth: 440,
+      maxHeight: "90vh",
+      overflowY: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: serif,
+      fontSize: 18,
+      color: C.beniDeep,
+      marginBottom: 4
+    }
+  }, "ご注文手続き"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: C.sub,
+      marginBottom: 12
+    }
+  }, checkout.p.name, "(", checkout.asSub ? "定期・毎月お届け" : "単品", ") ", yen(checkout.p.price)), [["お名前", cname, setCname], ["郵便番号", czip, setCzip], ["ご住所", caddr, setCaddr], ["お電話番号", cphone, setCphone], ["メールアドレス", cemail, setCemail]].map(([label, val, set]) => /*#__PURE__*/React.createElement("div", {
+    key: label,
+    style: {
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.sub,
+      marginBottom: 3
+    }
+  }, label), /*#__PURE__*/React.createElement("input", {
+    value: val,
+    onChange: e => set(e.target.value),
+    style: {
+      border: `1px solid ${C.line}`,
+      borderRadius: 8,
+      padding: "9px 12px",
+      fontSize: 13,
+      width: "100%"
+    }
+  }))), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setCname("愛島 花子");
+      setCzip("811-1213");
+      setCaddr("福岡県那珂川市中原2-120");
+      setCphone("092-000-0000");
+      setCemail("hanako@example.com");
+    },
+    style: {
+      border: `1px dashed ${C.gray}`,
+      background: "#fff",
+      color: C.sub,
+      borderRadius: 8,
+      padding: "7px 12px",
+      fontSize: 12,
+      cursor: "pointer",
+      marginBottom: 12
+    }
+  }, "サンプル情報を自動入力(デモ用)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setCheckout(null),
+    style: {
+      flex: 1,
+      border: `1px solid ${C.line}`,
+      background: "#fff",
+      color: C.sub,
+      borderRadius: 8,
+      padding: "11px 0",
+      fontSize: 13,
+      cursor: "pointer"
+    }
+  }, "戻る"), /*#__PURE__*/React.createElement("button", {
+    onClick: confirmPurchase,
+    style: {
+      flex: 2,
+      border: "none",
+      background: C.beni,
+      color: "#fff",
+      borderRadius: 8,
+      padding: "11px 0",
+      fontWeight: 700,
+      fontSize: 13,
+      cursor: "pointer"
+    }
+  }, "注文を確定する(デモ・決済なし)")))), orderDetail && /*#__PURE__*/React.createElement("div", {
+    onClick: () => setOrderDetail(null),
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.45)",
+      zIndex: 40,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: e => e.stopPropagation(),
+    style: {
+      background: "#fff",
+      borderRadius: 16,
+      padding: 20,
+      width: "100%",
+      maxWidth: 500,
+      maxHeight: "90vh",
+      overflowY: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: serif,
+      fontSize: 18,
+      color: C.beniDeep,
+      marginBottom: 10
+    }
+  }, "受注詳細 #", orderDetail.id), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      lineHeight: 2,
+      marginBottom: 12
+    }
+  }, "商品: ", /*#__PURE__*/React.createElement("b", null, orderDetail.product), "(", orderDetail.type, orderDetail.subMonth ? ` ${orderDetail.subMonth}ヶ月目` : "", ") / 金額: ", yen(orderDetail.price), " / 紹介: ", orderDetail.partner || "なし"), orderDetail.shipTo ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      lineHeight: 2,
+      background: C.bg,
+      borderRadius: 10,
+      padding: 12,
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("b", null, "お届け先"), /*#__PURE__*/React.createElement("br", null), orderDetail.shipTo.name, " 様", /*#__PURE__*/React.createElement("br", null), "〒", orderDetail.shipTo.zip || "-", " ", orderDetail.shipTo.addr, /*#__PURE__*/React.createElement("br", null), "TEL: ", orderDetail.shipTo.phone || "-", " / ", orderDetail.shipTo.email || "-") : /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.sub,
+      marginBottom: 12
+    }
+  }, "この注文はデモの初期データのため、お届け先情報がありません。お客様画面から新しく注文すると入ります。"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.sub,
+      marginBottom: 6
+    }
+  }, "この注文で ", notifyEmail, " に自動送信される通知メール:"), /*#__PURE__*/React.createElement("pre", {
+    style: {
+      background: "#3A2A2E",
+      color: "#F6E3E8",
+      borderRadius: 10,
+      padding: 12,
+      fontSize: 11.5,
+      lineHeight: 1.8,
+      overflowX: "auto",
+      whiteSpace: "pre-wrap"
+    }
+  }, mailText(orderDetail)), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setOrderDetail(null),
+    style: {
+      marginTop: 12,
+      width: "100%",
+      border: `1px solid ${C.line}`,
+      background: "#fff",
+      color: C.sub,
+      borderRadius: 8,
+      padding: "10px 0",
+      fontSize: 13,
+      cursor: "pointer"
+    }
+  }, "閉じる"))), toast && /*#__PURE__*/React.createElement("div", {
     style: {
       position: "fixed",
       bottom: 24,
