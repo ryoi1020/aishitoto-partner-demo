@@ -1,0 +1,3086 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="7つの収益源を一元管理するビジネスダッシュボード">
+    <meta name="theme-color" content="#5B50C1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Seven Pockets">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="./icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+    <title>セブンポケット・ダッシュボード</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #f8f9fc;
+            color: #1a202c;
+            line-height: 1.6;
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #5B50C1 0%, #4A4199 100%);
+            color: white;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 24px rgba(91, 80, 193, 0.15);
+            z-index: 100;
+        }
+        
+        .sidebar-brand {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            letter-spacing: -0.5px;
+        }
+        
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 500;
+            border: 2px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .nav-item-icon {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        
+        .nav-item-desc {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            padding-bottom: 40px;
+        }
+        
+        .bottom-nav {
+            display: none;
+        }
+        
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+                padding: 16px;
+            }
+            
+            .sidebar-brand {
+                font-size: 20px;
+                margin-bottom: 24px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+                padding: 24px;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+                padding-bottom: 140px;
+            }
+            
+            .bottom-nav {
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #5B50C1 0%, #4A4199 100%);
+                color: white;
+                z-index: 99;
+                box-shadow: 0 -4px 16px rgba(91, 80, 193, 0.2);
+                padding: 6px 2px;
+                padding-bottom: max(6px, env(safe-area-inset-bottom));
+                gap: 0;
+            }
+            
+            .bottom-nav-item {
+                padding: 6px 2px;
+                text-align: center;
+                cursor: pointer;
+                border-top: 2px solid transparent;
+                transition: all 0.2s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 3px;
+                border-radius: 10px;
+            }
+            
+            .bottom-nav-item.active {
+                background: rgba(255, 255, 255, 0.15);
+                border-top-color: #06A77D;
+            }
+            
+            .nav-item-icon {
+                font-size: 20px;
+                margin-right: 0;
+                line-height: 1;
+            }
+            
+            .nav-item-label {
+                font-size: 10px;
+                font-weight: 600;
+                line-height: 1.1;
+                white-space: nowrap;
+            }
+        }
+        
+        .header {
+            margin-bottom: 32px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #5B50C1 0%, #06A77D 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .summary-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        @media (max-width: 640px) {
+            .summary-section {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+        
+        @media (max-width: 640px) {
+            .summary-card {
+                padding: 16px;
+                border-radius: 12px;
+            }
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #718096;
+            margin-bottom: 8px;
+            line-height: 1.35;
+            min-height: calc(1.35em * 2);
+        }
+        
+        @media (max-width: 640px) {
+            .summary-label {
+                font-size: 11px;
+                margin-bottom: 6px;
+                min-height: calc(1.35em * 2);
+            }
+        }
+        
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+        }
+        .num {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+            text-align: right;
+        }
+        
+        @media (max-width: 640px) {
+            .summary-value {
+                font-size: 20px;
+                margin-bottom: 4px;
+            }
+        }
+        
+        .summary-card.revenue .summary-value {
+            color: #06A77D;
+        }
+        
+        .summary-card.expense .summary-value {
+            color: #FF6B35;
+        }
+        
+        .summary-card.profit .summary-value {
+            color: #5B50C1;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 32px;
+        }
+        
+        @media (max-width: 640px) {
+            .form-section {
+                padding: 20px;
+                border-radius: 12px;
+                margin-bottom: 20px;
+            }
+        }
+        
+        .form-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #1a202c;
+        }
+        
+        @media (max-width: 640px) {
+            .form-title {
+                font-size: 16px;
+                margin-bottom: 16px;
+            }
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .tab-button {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #718096;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            margin-bottom: -2px;
+        }
+        
+        .tab-button.active {
+            color: #5B50C1;
+            border-bottom-color: #5B50C1;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+        
+        .form-control {
+            padding: 12px 14px;
+            border: 1px solid #cbd5e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        @media (max-width: 640px) {
+            .form-control {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #5B50C1;
+            box-shadow: 0 0 0 3px rgba(91, 80, 193, 0.1);
+        }
+        
+        .btn-primary {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #5B50C1 0%, #4A4199 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 640px) {
+            .btn-primary {
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(91, 80, 193, 0.4);
+        }
+        
+        .btn-danger {
+            padding: 8px 12px;
+            background: #fed7d7;
+            color: #c53030;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .btn-danger:hover {
+            background: #fc8787;
+            color: white;
+        }
+        
+        .calendar-container {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 32px;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-container {
+                padding: 16px;
+                border-radius: 12px;
+                margin-bottom: 20px;
+            }
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-header {
+                margin-bottom: 16px;
+            }
+        }
+        
+        .calendar-nav button {
+            padding: 8px 16px;
+            background: #edf2f7;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #5B50C1;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-nav button {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+        }
+        
+        .calendar-nav button:hover {
+            background: #e2e8f0;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-grid {
+                gap: 4px;
+            }
+        }
+        
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 700;
+            font-size: 12px;
+            color: #718096;
+            padding: 12px 4px;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-day-header {
+                font-size: 11px;
+                padding: 8px 2px;
+            }
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 6px;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            gap: 2px;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-day {
+                padding: 4px;
+                border-radius: 8px;
+                font-size: 10px;
+            }
+        }
+        
+        .calendar-day.positive {
+            background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+            border-color: #9ae6b4;
+        }
+        
+        .calendar-day.negative {
+            background: linear-gradient(135deg, #fed7d7 0%, #fc8787 100%);
+            border-color: #fc8787;
+        }
+        
+        .calendar-day.neutral {
+            background: #f0f4f8;
+            border-color: #cbd5e0;
+        }
+        
+        .calendar-day.other-month {
+            background: #fafbfc;
+            color: #cbd5e0;
+            opacity: 0.5;
+        }
+        
+        .calendar-day-date {
+            font-weight: 700;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-day-date {
+                font-size: 11px;
+            }
+        }
+        
+        .calendar-day-amount {
+            font-size: 9px;
+            font-weight: 700;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-day-amount {
+                font-size: 8px;
+            }
+        }
+        
+        .calendar-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-stats {
+                gap: 8px;
+                margin-top: 16px;
+            }
+        }
+        
+        .calendar-stat {
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-stat {
+                padding: 10px;
+                border-radius: 10px;
+            }
+        }
+        
+        .calendar-stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-stat-label {
+                font-size: 10px;
+            }
+        }
+        
+        .calendar-stat-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-stat-value {
+                font-size: 16px;
+            }
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            font-size: 13px;
+        }
+        
+        @media (max-width: 640px) {
+            .table {
+                font-size: 12px;
+            }
+        }
+        
+        .table th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        @media (max-width: 640px) {
+            .table th {
+                padding: 10px;
+                font-size: 11px;
+            }
+        }
+        
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            word-break: break-word;
+        }
+        
+        @media (max-width: 640px) {
+            .table td {
+                padding: 10px;
+            }
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .alert.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .alert.show {
+            display: block;
+        }
+        
+        .content {
+            display: none;
+        }
+        
+        .content.active {
+            display: block;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        @media (max-width: 640px) {
+            .data-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        @media (max-width: 640px) {
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+                border-radius: 12px;
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #718096;
+        }
+        
+        .detail-section {
+            margin-bottom: 20px;
+        }
+        
+        .detail-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #718096;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+        
+        .detail-item-label {
+            color: #4a5568;
+        }
+        
+        .detail-item-value {
+            font-weight: 600;
+            color: #1a202c;
+        }
+        
+        .detail-item.revenue .detail-item-value {
+            color: #06A77D;
+        }
+        
+        .detail-item.expense .detail-item-value {
+            color: #FF6B35;
+        }
+        
+        .detail-summary {
+            background: linear-gradient(135deg, #f8f9fc 0%, #edf2f7 100%);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+        
+        .detail-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        
+        .detail-summary-item.total {
+            border-top: 2px solid #cbd5e0;
+            padding-top: 12px;
+            margin-top: 12px;
+            font-size: 16px;
+        }
+        
+        .detail-summary-item.profit {
+            color: #5B50C1;
+        }
+        
+        .calendar-day.clickable {
+            cursor: pointer;
+        }
+        
+        .calendar-day.clickable:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        .summary-value { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+        .amt-row { display: flex; align-items: center; gap: 10px; }
+        .amt-row .amt-main { flex: 1; min-width: 0; word-break: break-word; }
+        .amt-row .amt-val { flex-shrink: 0; min-width: 104px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+        .amt-row .amt-act { flex-shrink: 0; }
+        .revenue-chip { background: #EDF2F7; border: 1px solid #E2E8F0; color: #2D3748; border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+        .revenue-chip:hover { background: #E2E8F0; }
+        .num, .detail-item-value, .calendar-day-amount { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+        /* ============================================================
+           Seven Pockets — Design System v2  (premium ledger)
+           インディゴ × ゴールド × エメラルド / 紙の質感 / Space Grotesk
+           ============================================================ */
+        :root{
+            --paper:#F5F6FB; --paper-2:#EEF0F8;
+            --surface:#FFFFFF; --surface-2:#FBFBFE;
+            --ink:#191B2E; --ink-soft:#3D4060;
+            --muted:#888FA6; --faint:#AEB4C6;
+            --line:#ECEEF5; --line-strong:#E1E4EF;
+            --indigo:#5B50C1; --indigo-2:#7A6FE0; --indigo-deep:#2A2570;
+            --emerald:#0E9E6B; --emerald-ink:#0B7E55;
+            --coral:#EF6238; --coral-ink:#C2410C;
+            --gold:#C6952F; --gold-2:#E0B050;
+            --r-lg:20px; --r-md:14px; --r-sm:10px;
+            --sh-card:0 1px 2px rgba(25,27,46,.04), 0 16px 32px -20px rgba(25,27,46,.22);
+            --sh-pop:0 28px 56px -18px rgba(25,27,46,.34);
+            --ease:cubic-bezier(.4,0,.2,1);
+        }
+
+        body{
+            font-family:'Zen Kaku Gothic New','Hiragino Sans','Hiragino Kaku Gothic ProN',-apple-system,BlinkMacSystemFont,sans-serif;
+            color:var(--ink);
+            background:
+                radial-gradient(130% 75% at 100% -5%, rgba(91,80,193,.07), transparent 58%),
+                radial-gradient(110% 60% at -5% 105%, rgba(198,149,47,.06), transparent 55%),
+                linear-gradient(180deg,#F6F7FC 0%, #F0F1F8 100%);
+            background-attachment:fixed;
+            -webkit-font-smoothing:antialiased;
+            text-rendering:optimizeLegibility;
+        }
+
+        /* 数字・見出しは Space Grotesk + 等幅数字 */
+        .summary-value,.num,.calendar-day-amount,.calendar-day-date,
+        .calendar-stat-value,.detail-item-value,.detail-summary-item,
+        #revenueTotalAmount,#expenseTotalAmount{
+            font-family:'Space Grotesk','Zen Kaku Gothic New',sans-serif;
+            font-variant-numeric:tabular-nums; font-feature-settings:"tnum";
+            letter-spacing:-.015em;
+        }
+
+        /* ---- Header / brand ---- */
+        .header{ margin-bottom:26px; }
+        .header h1{
+            font-family:'Space Grotesk','Zen Kaku Gothic New',sans-serif;
+            font-weight:700; letter-spacing:-.025em;
+            background:linear-gradient(100deg,var(--indigo) 0%, var(--indigo-2) 42%, var(--gold) 115%);
+            -webkit-background-clip:text; background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+        .header p{ color:var(--muted); font-size:14px; letter-spacing:.005em; }
+
+        /* ---- Sidebar (desktop) ---- */
+        .sidebar{
+            background:linear-gradient(168deg,#3E368F 0%, #2C2672 52%, #211C58 100%);
+            box-shadow:0 14px 44px -18px rgba(33,28,88,.55);
+        }
+        .sidebar-brand{ letter-spacing:-.01em; font-weight:700; }
+        .nav-item{ transition:background .2s var(--ease), transform .2s var(--ease); }
+        .nav-item:hover{ background:rgba(255,255,255,.12); }
+        .nav-item.active{
+            background:rgba(255,255,255,.16);
+            border-color:rgba(255,255,255,.26);
+            box-shadow:inset 3px 0 0 var(--gold-2);
+        }
+
+        /* ---- Surfaces ---- */
+        .summary-card,.form-section,.calendar-container,.calendar-stat,.modal-content{
+            background:var(--surface);
+            border:1px solid var(--line);
+            border-radius:var(--r-lg);
+            box-shadow:var(--sh-card);
+        }
+
+        /* ---- Stat tiles ---- */
+        .summary-section{ gap:14px; }
+        .summary-card{ position:relative; overflow:hidden; }
+        .summary-card::before{
+            content:""; position:absolute; left:0; top:0; bottom:0; width:3px;
+            background:var(--faint);
+        }
+        .summary-card.revenue::before{ background:var(--emerald); }
+        .summary-card.expense::before{ background:var(--coral); }
+        .summary-card.profit::before{ background:linear-gradient(var(--indigo),var(--gold)); }
+        .summary-label{
+            font-size:11px; font-weight:700; letter-spacing:.07em;
+            text-transform:uppercase; color:var(--muted);
+        }
+        .summary-value{ font-weight:600; font-size:27px; color:var(--ink); margin-top:6px; }
+        .summary-card.revenue .summary-value{ color:var(--emerald); }
+        .summary-card.expense .summary-value{ color:var(--coral); }
+        .summary-card.profit .summary-value{ color:var(--indigo); }
+
+        /* ---- Forms ---- */
+        .form-title{
+            font-family:'Space Grotesk','Zen Kaku Gothic New',sans-serif;
+            font-size:16px; letter-spacing:-.01em; color:var(--ink); font-weight:600;
+        }
+        .form-label{ color:var(--ink-soft); font-weight:600; font-size:13px; }
+        .form-control{
+            border:1px solid var(--line-strong); border-radius:var(--r-md);
+            background:var(--surface-2); color:var(--ink);
+            font-size:16px;  /* iOSのフォーカス時自動ズーム防止（16px未満で発生） */
+            transition:border-color .15s, box-shadow .15s, background .15s;
+        }
+        .form-control:hover{ border-color:#D3D8E6; }
+        .form-control:focus{
+            border-color:var(--indigo); background:#fff; outline:none;
+            box-shadow:0 0 0 4px rgba(91,80,193,.13);
+        }
+        select.form-control{
+            appearance:none; -webkit-appearance:none; padding-right:38px;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888FA6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat:no-repeat; background-position:right 13px center;
+        }
+
+        /* ---- Buttons ---- */
+        .btn-primary{
+            background:linear-gradient(135deg,#6256D6 0%, #4A3FB0 100%);
+            border-radius:var(--r-md); font-weight:600; letter-spacing:.01em;
+            box-shadow:0 10px 20px -10px rgba(74,63,176,.7);
+            transform:none;
+            transition:box-shadow .2s, filter .2s;
+        }
+        .btn-primary:hover{
+            transform:none; filter:brightness(1.04);
+            box-shadow:0 12px 22px -10px rgba(74,63,176,.7);
+        }
+        .btn-primary:active{ transform:none; filter:brightness(.97); }
+        .btn-danger{
+            background:var(--coral-soft,#FDEEE8); color:var(--coral-ink);
+            border-radius:var(--r-sm); font-weight:600; transition:all .15s var(--ease);
+        }
+        .btn-danger:hover{ background:var(--coral); color:#fff; }
+
+        /* ---- Add-new-tag affordance ---- */
+        .btn-ghost{
+            display:flex; align-items:center; justify-content:center; gap:6px;
+            width:100%; margin-top:10px; padding:11px 12px;
+            background:rgba(91,80,193,.06); color:var(--indigo);
+            border:1.5px dashed rgba(91,80,193,.38); border-radius:var(--r-md);
+            font-family:inherit; font-weight:600; font-size:14px; cursor:pointer;
+            transition:background .15s var(--ease), border-color .15s;
+        }
+        .btn-ghost:hover{ background:rgba(91,80,193,.11); border-color:var(--indigo); }
+        .btn-ghost:active{ transform:none; background:rgba(91,80,193,.14); }
+        .btn-link{
+            display:inline-block; margin-top:10px; padding:4px 2px;
+            background:none; border:none; color:var(--muted);
+            font-family:inherit; font-weight:600; font-size:13px; cursor:pointer;
+            transition:color .15s;
+        }
+        .btn-link:hover{ color:var(--indigo); }
+
+        /* ---- Import drop zone ---- */
+        .drop-zone{
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            gap:4px; text-align:center; cursor:pointer;
+            padding:28px 16px;
+            background:rgba(91,80,193,.05);
+            border:1.5px dashed rgba(91,80,193,.4);
+            border-radius:var(--r-lg);
+            transition:background .15s var(--ease), border-color .15s var(--ease);
+        }
+        .drop-zone:hover{ background:rgba(91,80,193,.09); border-color:var(--indigo); }
+        .drop-zone.dragover{ background:rgba(91,80,193,.14); border-color:var(--indigo); border-style:solid; }
+        .drop-zone-icon{ font-size:30px; line-height:1; }
+        .drop-zone-main{ font-weight:700; color:var(--indigo); font-size:15px; }
+        .drop-zone-sub{ color:var(--muted); font-size:12px; }
+        input[type="checkbox"]{ accent-color:var(--indigo); }
+
+        /* ---- Tabs ---- */
+        .tab-buttons{
+            gap:6px; background:var(--paper-2); padding:4px;
+            border-radius:13px; border:none;
+        }
+        .tab-button{
+            flex:1; border:none; border-radius:9px; padding:10px;
+            color:var(--muted); font-weight:600;
+            transition:background .15s, color .15s, box-shadow .15s;
+        }
+        .tab-button.active{
+            background:var(--surface); color:var(--indigo);
+            border:none; box-shadow:0 1px 3px rgba(25,27,46,.08);
+        }
+
+        /* ---- Calendar (signature) ---- */
+        .calendar-nav button{
+            background:var(--paper-2); color:var(--indigo);
+            border-radius:10px; font-weight:600; transition:background .15s;
+        }
+        .calendar-nav button:hover{ background:#E2E5F2; }
+        .calendar-day{ border-radius:12px; border:1px solid transparent; transition:box-shadow .15s var(--ease); }
+        .calendar-day.clickable:hover{ transform:none; box-shadow:0 4px 12px -4px rgba(25,27,46,.2); }
+        .calendar-day.positive{ background:linear-gradient(158deg,#EAF8F1,#D6F0E3); border-color:#CCEBDA; }
+        .calendar-day.negative{ background:linear-gradient(158deg,#FDEFE9,#FADFD4); border-color:#F6D7C9; }
+        .calendar-day.neutral{ background:var(--surface-2); border-color:var(--line); }
+        .calendar-day.other-month{ background:transparent; border-color:transparent; color:var(--faint); }
+        .calendar-day.positive .calendar-day-amount{ color:var(--emerald-ink); }
+        .calendar-day.negative .calendar-day-amount{ color:var(--coral-ink); }
+        .calendar-day-header{ color:var(--muted); font-weight:700; letter-spacing:.04em; }
+        .calendar-stat-value{ font-weight:600; }
+
+        /* ---- Tables / lists ---- */
+        .table th{
+            background:var(--paper-2); color:var(--ink-soft);
+            font-size:12px; letter-spacing:.04em;
+        }
+        .table td{ border-color:var(--line); }
+
+        /* ---- Toast / modal ---- */
+        .alert.success{
+            background:var(--ink); color:#fff; border-radius:13px;
+            box-shadow:var(--sh-pop); font-weight:600; letter-spacing:.01em;
+        }
+        .modal-content{ box-shadow:var(--sh-pop); border-radius:var(--r-lg); }
+        .modal-title{ font-family:'Space Grotesk','Zen Kaku Gothic New',sans-serif; }
+        .detail-summary{
+            background:linear-gradient(135deg,#F7F8FC,#EDEFF8);
+            border:1px solid var(--line);
+        }
+        .revenue-chip{ background:var(--paper-2); border-color:var(--line-strong); }
+
+        /* ---- a11y / motion ---- */
+        :focus-visible{ outline:2px solid var(--indigo); outline-offset:2px; }
+        @media (prefers-reduced-motion:reduce){ *{ transition:none !important; animation:none !important; } }
+
+        /* ---- Mobile refinements (highest priority, last) ---- */
+        @media (max-width:640px){
+            .header h1{ font-size:27px; }
+            .summary-value{ font-size:22px; }
+            .summary-label{ font-size:10px; }
+            .bottom-nav{
+                background:rgba(38,33,92,.9);
+                -webkit-backdrop-filter:saturate(140%) blur(16px);
+                backdrop-filter:saturate(140%) blur(16px);
+                border-radius:22px 22px 0 0;
+                border-top:1px solid rgba(255,255,255,.08);
+                box-shadow:0 -10px 30px -12px rgba(33,28,88,.55);
+            }
+            .bottom-nav-item{ color:rgba(255,255,255,.6); border-top:none; }
+            .bottom-nav-item.active{
+                color:#fff; background:rgba(255,255,255,.14);
+                border-top:none; box-shadow:inset 0 2px 0 var(--gold-2);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-brand">💰 Seven Pockets</div>
+            <div class="sidebar-nav">
+                <div class="nav-item active" onclick="switchPage('dashboard')">
+                    <span class="nav-item-icon">📊</span>本日の記録<div class="nav-item-desc">売上・支出を入力</div>
+                </div>
+                <div class="nav-item" onclick="switchPage('calendar')">
+                    <span class="nav-item-icon">📅</span>月間カレンダー<div class="nav-item-desc">収支を視覚化</div>
+                </div>
+                <div class="nav-item" onclick="switchPage('recurring')">
+                    <span class="nav-item-icon">🔄</span>定期設定<div class="nav-item-desc">収入・支出の定期</div>
+                </div>
+                <div class="nav-item" onclick="switchPage('targets')">
+                    <span class="nav-item-icon">🎯</span>月間目標<div class="nav-item-desc">売上目標を設定</div>
+                </div>
+                <div class="nav-item" onclick="switchPage('accounts')">
+                    <span class="nav-item-icon">🏦</span>口座・資産<div class="nav-item-desc">現金・純資産を管理</div>
+                </div>
+                <div class="nav-item" onclick="switchPage('data')">
+                    <span class="nav-item-icon">💾</span>データ管理<div class="nav-item-desc">バックアップ・復元</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="message" class="alert"></div>
+            
+            <!-- Dashboard -->
+            <div id="dashboard" class="content active">
+                <div class="header">
+                    <h1>セブンポケット</h1>
+                    <p>7つの収益源を一元管理</p>
+                </div>
+                
+                <div class="summary-section">
+                    <div class="summary-card revenue">
+                        <div class="summary-label">今月の売上</div>
+                        <div class="summary-value" id="totalRevenue">¥0</div>
+                    </div>
+                    <div class="summary-card expense">
+                        <div class="summary-label">今月の支出</div>
+                        <div class="summary-value" id="totalExpense">¥0</div>
+                    </div>
+                    <div class="summary-card profit">
+                        <div class="summary-label">今月の利益</div>
+                        <div class="summary-value" id="totalProfit">¥0</div>
+                    </div>
+                    <div class="summary-card profit">
+                        <div class="summary-label">利益率</div>
+                        <div class="summary-value" id="profitRate">0%</div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-title">本日の記録</div>
+                    
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="switchTab('revenue-tab')">📈 売上を記録</button>
+                        <button class="tab-button" onclick="switchTab('expense-tab')">📉 支出を記録</button>
+                    </div>
+                    
+                    <!-- 売上タブ -->
+                    <div id="revenue-tab" class="tab-content active">
+                        <form onsubmit="handleRevenueItemSubmit(event)">
+                            <div class="form-group">
+                                <label class="form-label">売上項目名</label>
+                                <div id="revenuePickMode">
+                                    <select id="revenueItemSelect" class="form-control"></select>
+                                    <button type="button" class="btn-ghost" onclick="revenueShowNew()">＋ 新しい項目を追加</button>
+                                </div>
+                                <div id="revenueNewMode" style="display:none;">
+                                    <input type="text" id="revenueItemNameNew" class="form-control" placeholder="新しい項目名（例：愛しトーク）">
+                                    <button type="button" class="btn-link" onclick="revenueShowPick()">← 一覧から選ぶ</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">金額</label>
+                                <input type="number" id="revenueItemAmount" class="form-control" placeholder="0" step="100">
+                            </div>
+                            <button type="submit" class="btn-primary">項目を追加</button>
+                        </form>
+                        
+                        <div id="revenueItemsList" style="margin-top: 20px;"></div>
+                        <div id="revenueSummary" style="margin-top: 16px; padding: 16px 18px; background: linear-gradient(135deg,#EAF8F1,#DCF1E6); border:1px solid #CBEBDA; border-radius: 14px; display: none;">
+                            <div style="font-size: 11px; color: #0B7E55; font-weight: 700; letter-spacing:.06em; text-transform:uppercase; margin-bottom: 6px;">本日の売上合計</div>
+                            <div id="revenueTotalAmount" class="num" style="font-size: 26px; font-weight: 600; color: #0E9E6B;">¥0</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 支出タブ -->
+                    <div id="expense-tab" class="tab-content">
+                        <form onsubmit="handleExpenseItemSubmit(event)">
+                            <div class="form-group">
+                                <label class="form-label">支出項目名</label>
+                                <div id="expensePickMode">
+                                    <select id="expenseItemSelect" class="form-control"></select>
+                                    <button type="button" class="btn-ghost" onclick="expenseShowNew()">＋ 新しい項目を追加</button>
+                                </div>
+                                <div id="expenseNewMode" style="display:none;">
+                                    <input type="text" id="expenseItemNameNew" class="form-control" placeholder="新しい項目名（例：食費）">
+                                    <button type="button" class="btn-link" onclick="expenseShowPick()">← 一覧から選ぶ</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">金額</label>
+                                <input type="number" id="expenseItemAmount" class="form-control" placeholder="0" step="100">
+                            </div>
+                            <button type="submit" class="btn-primary">項目を追加</button>
+                        </form>
+                        
+                        <div id="expenseItemsList" style="margin-top: 20px;"></div>
+                        <div id="expenseSummary" style="margin-top: 16px; padding: 16px 18px; background: linear-gradient(135deg,#FDEFE9,#FBE1D6); border:1px solid #F6D7C9; border-radius: 14px; display: none;">
+                            <div style="font-size: 11px; color: #C2410C; font-weight: 700; letter-spacing:.06em; text-transform:uppercase; margin-bottom: 6px;">本日の支出合計</div>
+                            <div id="expenseTotalAmount" class="num" style="font-size: 26px; font-weight: 600; color: #EF6238;">¥0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calendar -->
+            <div id="calendar" class="content">
+                <div class="header">
+                    <h1>カレンダー</h1>
+                    <p>日々の収支を視覚化（定期分も自動反映）</p>
+                </div>
+                
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <h2 id="calendarMonth" style="font-size: 20px; font-weight: 700; margin: 0;"></h2>
+                        <div class="calendar-nav">
+                            <button onclick="prevMonth()">← 前月</button>
+                            <button onclick="todayMonth()">今月</button>
+                            <button onclick="nextMonth()">来月 →</button>
+                        </div>
+                    </div>
+                    
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                    
+                    <div class="calendar-stats">
+                        <div class="calendar-stat" style="background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);">
+                            <div class="calendar-stat-label" style="color: #22543d;">プラス日数</div>
+                            <div class="calendar-stat-value" id="calendarPositive" style="color: #06A77D;"></div>
+                        </div>
+                        <div class="calendar-stat" style="background: linear-gradient(135deg, #fed7d7 0%, #fc8787 100%);">
+                            <div class="calendar-stat-label" style="color: #742a2a;">マイナス日数</div>
+                            <div class="calendar-stat-value" id="calendarNegative" style="color: #FF6B35;"></div>
+                        </div>
+                        <div class="calendar-stat" style="background: #f0f4f8;">
+                            <div class="calendar-stat-label" style="color: #4a5568;">ニュートラル</div>
+                            <div class="calendar-stat-value" id="calendarNeutral" style="color: #718096;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recurring -->
+            <div id="recurring" class="content">
+                <div class="header">
+                    <h1>定期設定</h1>
+                    <p>毎月の定期収入・支出を管理</p>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-title">📈 定期収入を追加</div>
+                    <form onsubmit="handleRecurringIncomeSubmit(event)">
+                        <div class="form-group">
+                            <label class="form-label">名前</label>
+                            <input type="text" id="recurringIncomeName" class="form-control" placeholder="例：基本給、児童手当">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">金額</label>
+                            <input type="number" id="recurringIncomeAmount" class="form-control" placeholder="0" step="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">周期</label>
+                            <select id="recurringIncomeCycle" class="form-control">
+                                <option value="monthly">月次</option>
+                                <option value="weekly">週次</option>
+                                <option value="daily">日次</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">開始日（1-31）</label>
+                            <input type="number" id="recurringIncomeDate" class="form-control" placeholder="1" min="1" max="31">
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">定期収入を追加</button>
+                    </form>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-title">定期収入一覧</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>名前</th>
+                                <th>金額</th>
+                                <th>周期</th>
+                                <th>開始日</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recurringIncomeList"></tbody>
+                    </table>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-title">📉 定期支出を追加</div>
+                    <form onsubmit="handleRecurringExpenseSubmit(event)">
+                        <div class="form-group">
+                            <label class="form-label">名前</label>
+                            <input type="text" id="recurringExpenseName" class="form-control" placeholder="例：家賃、保険">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">金額</label>
+                            <input type="number" id="recurringExpenseAmount" class="form-control" placeholder="0" step="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">周期</label>
+                            <select id="recurringExpenseCycle" class="form-control">
+                                <option value="monthly">月次</option>
+                                <option value="weekly">週次</option>
+                                <option value="daily">日次</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">開始日（1-31）</label>
+                            <input type="number" id="recurringExpenseDate" class="form-control" placeholder="15" min="1" max="31">
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">定期支出を追加</button>
+                    </form>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-title">定期支出一覧</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>名前</th>
+                                <th>金額</th>
+                                <th>周期</th>
+                                <th>開始日</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recurringExpenseList"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Targets -->
+            <div id="targets" class="content">
+                <div class="header">
+                    <h1>月間目標</h1>
+                    <p>収益源ごとに目標と進捗を管理</p>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-title">🎯 収益源ごとの月間目標</div>
+                    <p style="color:#718096; font-size:13px; margin-bottom:16px;">「本日の記録」で使った売上項目ごとに、今月の目標と進捗を表示します。</p>
+                    <div id="targetItemsContainer"></div>
+                    <button class="btn-primary" style="margin-top:16px;" onclick="saveItemTargets()">目標を保存</button>
+                </div>
+            </div>
+            
+            <!-- Accounts / Assets -->
+            <div id="accounts" class="content">
+                <div class="header">
+                    <h1>口座・資産</h1>
+                    <p>現金残高と取得記録を管理</p>
+                </div>
+
+                <!-- 純資産サマリー -->
+                <div class="summary-section" id="networthSummary" style="margin-bottom: 20px;">
+                    <div class="summary-card">
+                        <div class="summary-label">合計（現金＋投資元本）</div>
+                        <div class="summary-value" id="nwTotal" style="color:#2D3748;">¥0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">現金合計</div>
+                        <div class="summary-value" id="nwCash" style="color:#06A77D;">¥0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">投資元本（取得額累計）</div>
+                        <div class="summary-value" id="nwAssets" style="color:#5A67D8;">¥0</div>
+                    </div>
+                </div>
+
+                <!-- 口座追加フォーム -->
+                <div class="form-section">
+                    <div class="form-title">🏦 口座を追加</div>
+                    <form onsubmit="handleAccountSubmit(event)">
+                        <div class="form-group">
+                            <label class="form-label">口座名</label>
+                            <input type="text" id="accountName" class="form-control" placeholder="例：楽天銀行、楽天証券、財布" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">種別</label>
+                            <select id="accountType" class="form-control">
+                                <option value="bank">🏦 銀行</option>
+                                <option value="securities">📈 証券</option>
+                                <option value="cash">💵 現金</option>
+                                <option value="emoney">💳 電子マネー</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">現在の現金残高（円）</label>
+                            <input type="number" id="accountBalance" class="form-control" placeholder="0" step="1">
+                        </div>
+                        <button type="submit" class="btn-primary">追加</button>
+                    </form>
+                </div>
+
+                <!-- 口座一覧 -->
+                <div class="form-section">
+                    <div class="form-title">📋 口座一覧</div>
+                    <p style="color:#718096; font-size:13px; margin-bottom:12px;">残高はその場で編集できます。</p>
+                    <div id="accountList"></div>
+                </div>
+
+                <!-- 取得記録（買った履歴）の追加 -->
+                <div class="form-section">
+                    <div class="form-title">📈 取得記録を追加</div>
+                    <p style="color:#718096; font-size:13px; margin-bottom:16px;">「いつ・何を・いくらで買ったか」を記録します。数量・単価は任意です。</p>
+                    <form onsubmit="handleHoldingSubmit(event)">
+                        <div class="form-group">
+                            <label class="form-label">買った日</label>
+                            <input type="date" id="holdDate" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">銘柄名</label>
+                            <input type="text" id="holdName" class="form-control" placeholder="例：eMAXIS Slim S&P500、トヨタ自動車、VOO" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">取得金額（円）</label>
+                            <input type="number" id="holdAmount" class="form-control" placeholder="例：50000" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">区分</label>
+                            <select id="holdKind" class="form-control">
+                                <option value="tsumitate">🔁 定期積立</option>
+                                <option value="spot">⚡ スポット購入</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">資産クラス（任意）</label>
+                            <select id="holdClass" class="form-control">
+                                <option value="">未設定</option>
+                                <option value="jp_stock">日本株</option>
+                                <option value="us_stock">米国株</option>
+                                <option value="etf">ETF</option>
+                                <option value="fund">投資信託</option>
+                                <option value="other">その他</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">口座（任意）</label>
+                            <select id="holdAccount" class="form-control"><option value="">未設定</option></select>
+                        </div>
+                        <div style="display:flex; gap:12px;">
+                            <div class="form-group" style="flex:1;">
+                                <label class="form-label">数量（任意）</label>
+                                <input type="number" id="holdQty" class="form-control" placeholder="株 / 口" step="any">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label class="form-label">取得単価（任意）</label>
+                                <input type="number" id="holdUnit" class="form-control" placeholder="0" step="any">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">記録する</button>
+                    </form>
+                </div>
+
+                <!-- 銘柄ごとのサマリー -->
+                <div class="form-section">
+                    <div class="form-title">💼 保有サマリー（銘柄別）</div>
+                    <div id="holdingsSummary"></div>
+                </div>
+
+                <!-- 取得記録の一覧 -->
+                <div class="form-section">
+                    <div class="form-title">🧾 取得記録（履歴）</div>
+                    <div id="holdingsList"></div>
+                </div>
+            </div>
+
+            <!-- Data -->
+            <div id="data" class="content">
+                <div class="header">
+                    <h1>データ管理</h1>
+                    <p>クラウド同期とバックアップ</p>
+                </div>
+
+                <div class="form-section" style="margin-bottom:20px;">
+                    <div class="form-title">☁️ クラウド同期</div>
+                    <p style="color:#888FA6; font-size:13px; margin-bottom:16px;">合言葉ひとつで、複数の端末から同じデータを呼び出せます。データは端末側で暗号化してから保存されるので、サーバーにも中身は見えません。</p>
+                    <div class="form-group">
+                        <label class="form-label">合言葉（パスフレーズ）</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="cloudPass" class="form-control" placeholder="長めの自分だけの合言葉（日本語OK）" autocomplete="off" autocapitalize="off" style="flex:1; -webkit-text-security:disc;">
+                            <button type="button" class="btn-danger" id="cloudPassToggle" onclick="togglePassVisible()" style="flex-shrink:0; padding:0 14px; background:var(--paper-2); color:var(--ink-soft);">表示</button>
+                        </div>
+                    </div>
+                    <label style="display:flex; align-items:center; gap:8px; margin:2px 0 16px; cursor:pointer; color:var(--ink-soft); font-size:14px; font-weight:600;">
+                        <input type="checkbox" id="cloudAuto" onchange="Cloud.setAuto(this.checked)" style="width:18px; height:18px;">
+                        自動同期（開いたら読み込み・変更したら自動保存）
+                    </label>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-primary" style="flex:1; min-width:150px;" onclick="Cloud.saveNow()">☁️ クラウドに保存</button>
+                        <button class="btn-primary" style="flex:1; min-width:150px; background:linear-gradient(135deg,#0E9E6B,#0B7E55); box-shadow:0 10px 20px -10px rgba(14,158,107,.6);" onclick="Cloud.loadNow()">⤓ クラウドから読み込み</button>
+                    </div>
+                    <div id="cloudStatus" style="margin-top:14px; font-size:13px; color:var(--muted);"></div>
+                    <details style="margin-top:16px;">
+                        <summary style="cursor:pointer; color:#888FA6; font-size:13px; font-weight:600;">同期サーバーの詳細設定（通常は変更不要）</summary>
+                        <div class="form-group" style="margin-top:12px;">
+                            <label class="form-label">同期サーバーURL（Worker）</label>
+                            <input type="url" id="cloudUrl" class="form-control" placeholder="https://seven-pockets-sync.xxxx.workers.dev" autocapitalize="off" autocomplete="off">
+                        </div>
+                    </details>
+                </div>
+                
+                <div class="data-grid">
+                    <div class="form-section">
+                        <div class="form-title">📥 エクスポート</div>
+                        <p style="color: #718096; font-size: 13px; margin-bottom: 16px;">データをダウンロード</p>
+                        <button class="btn-primary" onclick="exportData()">JSONをダウンロード</button>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="form-title">📤 インポート</div>
+                        <p style="color:#888FA6; font-size:13px; margin-bottom:14px;">バックアップした <strong>.json</strong> ファイルを読み込みます（文字化けしません）。</p>
+
+                        <input type="file" id="importFileInput" accept=".json,application/json" style="display:none;" onchange="handleImportFileInput(this)">
+                        <div id="importDropZone" class="drop-zone"
+                             onclick="document.getElementById('importFileInput').click()"
+                             ondrop="handleImportDrop(event)"
+                             ondragover="handleImportDragOver(event)"
+                             ondragleave="handleImportDragLeave()">
+                            <div class="drop-zone-icon">📁</div>
+                            <div class="drop-zone-main">ファイルを選ぶ</div>
+                            <div class="drop-zone-sub">またはここに .json をドラッグ＆ドロップ</div>
+                        </div>
+
+                        <details style="margin-top:16px;">
+                            <summary style="cursor:pointer; color:#888FA6; font-size:13px; font-weight:600;">テキストを貼り付けて復元</summary>
+                            <div class="form-group" style="margin-top:12px;">
+                                <textarea id="importText" class="form-control" style="min-height: 100px; font-family: monospace; font-size: 16px;" placeholder='{ "daily_history": ... }'></textarea>
+                            </div>
+                            <button class="btn-primary" onclick="importData()">貼り付けた内容で復元</button>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bottom-nav" id="bottomNav">
+        <div class="bottom-nav-item active" onclick="switchPage('dashboard')">
+            <div class="nav-item-icon">📊</div>
+            <div class="nav-item-label">記録</div>
+        </div>
+        <div class="bottom-nav-item" onclick="switchPage('calendar')">
+            <div class="nav-item-icon">📅</div>
+            <div class="nav-item-label">カレンダー</div>
+        </div>
+        <div class="bottom-nav-item" onclick="switchPage('recurring')">
+            <div class="nav-item-icon">🔄</div>
+            <div class="nav-item-label">定期</div>
+        </div>
+        <div class="bottom-nav-item" onclick="switchPage('targets')">
+            <div class="nav-item-icon">🎯</div>
+            <div class="nav-item-label">目標</div>
+        </div>
+        <div class="bottom-nav-item" onclick="switchPage('accounts')">
+            <div class="nav-item-icon">🏦</div>
+            <div class="nav-item-label">口座</div>
+        </div>
+        <div class="bottom-nav-item" onclick="switchPage('data')">
+            <div class="nav-item-icon">💾</div>
+            <div class="nav-item-label">データ</div>
+        </div>
+    </div>
+    
+    <!-- 日付詳細モーダル -->
+    <div id="dayDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalDate" class="modal-title">2026年6月17日</h2>
+                <button class="modal-close" onclick="closeDayDetail()">×</button>
+            </div>
+            
+            <div id="modalBody"></div>
+        </div>
+    </div>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+        }
+        
+        let currentCalendarDate = new Date();
+        
+        const Storage = {
+            getDailyHistory: () => {
+                try {
+                    return JSON.parse(localStorage.getItem('daily_history') || '{}');
+                } catch (e) {
+                    console.error('Failed to parse daily_history:', e);
+                    return {};
+                }
+            },
+            setDailyHistory: (data) => {
+                try {
+                    localStorage.setItem('daily_history', JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to save daily_history:', e);
+                }
+            },
+            getRecurringIncome: () => {
+                try {
+                    return JSON.parse(localStorage.getItem('recurring_income') || '[]');
+                } catch (e) {
+                    console.error('Failed to parse recurring_income:', e);
+                    return [];
+                }
+            },
+            setRecurringIncome: (data) => {
+                try {
+                    localStorage.setItem('recurring_income', JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to save recurring_income:', e);
+                }
+            },
+            getRecurringExpense: () => {
+                try {
+                    return JSON.parse(localStorage.getItem('recurring_expense') || '[]');
+                } catch (e) {
+                    console.error('Failed to parse recurring_expense:', e);
+                    return [];
+                }
+            },
+            setRecurringExpense: (data) => {
+                try {
+                    localStorage.setItem('recurring_expense', JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to save recurring_expense:', e);
+                }
+            },
+            getTargets: () => {
+                try {
+                    return JSON.parse(localStorage.getItem('targets') || '{}');
+                } catch (e) {
+                    console.error('Failed to parse targets:', e);
+                    return {};
+                }
+            },
+            setTargets: (data) => {
+                try {
+                    localStorage.setItem('targets', JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to save targets:', e);
+                }
+            },
+            getAccounts: () => {
+                try {
+                    return JSON.parse(localStorage.getItem('accounts') || '[]');
+                } catch (e) {
+                    console.error('Failed to parse accounts:', e);
+                    return [];
+                }
+            },
+            setAccounts: (data) => {
+                try {
+                    localStorage.setItem('accounts', JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to save accounts:', e);
+                }
+            },
+            getNetworthHistory: () => {
+                try {
+                    return JSON.parse(localStorage.getItem('networth_history') || '{}');
+                } catch (e) {
+                    console.error('Failed to parse networth_history:', e);
+                    return {};
+                }
+            },
+            setNetworthHistory: (data) => {
+                try {
+                    localStorage.setItem('networth_history', JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to save networth_history:', e);
+                }
+            },
+            getHoldingsLog: () => {
+                try {
+                    return JSON.parse(localStorage.getItem('holdings_log') || '[]');
+                } catch (e) {
+                    console.error('Failed to parse holdings_log:', e);
+                    return [];
+                }
+            },
+            setHoldingsLog: (data) => {
+                try {
+                    localStorage.setItem('holdings_log', JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to save holdings_log:', e);
+                }
+            },
+            getRevenueItems: () => {
+                try {
+                    return JSON.parse(localStorage.getItem('revenue_items') || '[]');
+                } catch (e) {
+                    console.error('Failed to parse revenue_items:', e);
+                    return [];
+                }
+            },
+            setRevenueItems: (data) => {
+                try {
+                    localStorage.setItem('revenue_items', JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to save revenue_items:', e);
+                }
+            },
+            getExpenseItems: () => {
+                try {
+                    return JSON.parse(localStorage.getItem('expense_items') || '[]');
+                } catch (e) {
+                    console.error('Failed to parse expense_items:', e);
+                    return [];
+                }
+            },
+            setExpenseItems: (data) => {
+                try {
+                    localStorage.setItem('expense_items', JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to save expense_items:', e);
+                }
+            },
+        };
+        
+        function formatCurrency(value) {
+            return '¥' + Math.floor(value).toLocaleString('ja-JP');
+        }
+        
+        function formatDate(date) {
+            return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+        }
+        
+        function showMessage(msg) {
+            const alert = document.getElementById('message');
+            alert.textContent = msg;
+            alert.className = 'alert show success';
+            setTimeout(() => alert.classList.remove('show'), 3000);
+        }
+        
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        function getRecurringForDate(date) {
+            const dateNum = date.getDate();
+            const incomes = Storage.getRecurringIncome();
+            const expenses = Storage.getRecurringExpense();
+            
+            let totalRecurringRevenue = 0;
+            let totalRecurringExpense = 0;
+            
+            incomes.forEach(item => {
+                if (item.cycle === 'monthly' && item.date === dateNum) {
+                    totalRecurringRevenue += item.amount;
+                }
+            });
+            
+            expenses.forEach(item => {
+                if (item.cycle === 'monthly' && item.date === dateNum) {
+                    totalRecurringExpense += item.amount;
+                }
+            });
+            
+            return { revenue: totalRecurringRevenue, expense: totalRecurringExpense };
+        }
+        
+        function getDayBalance(date) {
+            const dateStr = formatDate(date);
+            const history = Storage.getDailyHistory();
+            const record = history[dateStr] || { revenue: 0, expense: 0 };
+            const recurring = getRecurringForDate(date);
+            
+            const totalRevenue = record.revenue + recurring.revenue;
+            const totalExpense = record.expense + recurring.expense;
+            
+            return totalRevenue - totalExpense;
+        }
+        
+        function getDayDetails(date) {
+            const dateStr = formatDate(date);
+            const history = Storage.getDailyHistory();
+            const record = history[dateStr];
+            
+            let manualRevenue = 0;
+            if (record) {
+                if (Array.isArray(record.revenue)) {
+                    manualRevenue = record.revenue.reduce((sum, item) => sum + (item.amount || 0), 0);
+                } else if (typeof record.revenue === 'number') {
+                    manualRevenue = record.revenue;
+                }
+            }
+            
+            let manualExpense = 0;
+            if (record) {
+                if (Array.isArray(record.expense)) {
+                    manualExpense = record.expense.reduce((sum, item) => sum + (item.amount || 0), 0);
+                } else if (typeof record.expense === 'number') {
+                    manualExpense = record.expense;
+                }
+            }
+            
+            const recurring = getRecurringForDate(date);
+            
+            const totalRevenue = manualRevenue + recurring.revenue;
+            const totalExpense = manualExpense + recurring.expense;
+            
+            return { revenue: totalRevenue, expense: totalExpense };
+        }
+        
+        function getMonthlyTotals() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            
+            let totalRevenue = 0;
+            let totalExpense = 0;
+            
+            const lastDay = new Date(year, month + 1, 0).getDate();
+            
+            for (let day = 1; day <= lastDay; day++) {
+                const date = new Date(year, month, day);
+                const details = getDayDetails(date);
+                totalRevenue += details.revenue;
+                totalExpense += details.expense;
+            }
+            
+            return { revenue: totalRevenue, expense: totalExpense };
+        }
+        
+        function updateDisplay() {
+            const totals = getMonthlyTotals();
+            const profit = totals.revenue - totals.expense;
+            
+            document.getElementById('totalRevenue').textContent = formatCurrency(totals.revenue);
+            document.getElementById('totalExpense').textContent = formatCurrency(totals.expense);
+            document.getElementById('totalProfit').textContent = formatCurrency(profit);
+            document.getElementById('profitRate').textContent = totals.revenue > 0 ? Math.round((profit / totals.revenue) * 100) + '%' : '0%';
+        }
+        
+        function updateCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            document.getElementById('calendarMonth').textContent = year + '年' + (month + 1) + '月';
+            
+            const firstDay = new Date(year, month, 1);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            let html = '';
+            const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            dayNames.forEach(day => {
+                html += `<div class="calendar-day-header">${day}</div>`;
+            });
+            
+            let positiveCount = 0, negativeCount = 0, neutralCount = 0;
+            
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                
+                const isOtherMonth = date.getMonth() !== month;
+                const balance = getDayBalance(date);
+                let statusClass = 'neutral';
+                
+                if (!isOtherMonth) {
+                    if (balance > 0) {
+                        statusClass = 'positive';
+                        positiveCount++;
+                    } else if (balance < 0) {
+                        statusClass = 'negative';
+                        negativeCount++;
+                    } else {
+                        neutralCount++;
+                    }
+                }
+                
+                const dateStr = formatDate(date);
+                html += `
+                    <div class="calendar-day ${statusClass} ${isOtherMonth ? 'other-month' : 'clickable'}" onclick="${isOtherMonth ? '' : `showDayDetail('${dateStr}')`}">
+                        <div class="calendar-day-date">${date.getDate()}</div>
+                        <div class="calendar-day-amount">${balance > 0 ? '+' : ''}${formatCurrency(balance)}</div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = html;
+            document.getElementById('calendarPositive').textContent = positiveCount + '日';
+            document.getElementById('calendarNegative').textContent = negativeCount + '日';
+            document.getElementById('calendarNeutral').textContent = neutralCount + '日';
+        }
+        
+        function updateRecurringLists() {
+            const incomes = Storage.getRecurringIncome();
+            const expenses = Storage.getRecurringExpense();
+            
+            let incomeHtml = '';
+            incomes.forEach((item, idx) => {
+                incomeHtml += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${formatCurrency(item.amount)}</td>
+                        <td>${item.cycle === 'monthly' ? '月次' : item.cycle === 'weekly' ? '週次' : '日次'}</td>
+                        <td>${item.date}日</td>
+                        <td><button type="button" class="btn-danger" onclick="deleteRecurringIncome(${idx})">削除</button></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('recurringIncomeList').innerHTML = incomeHtml || '<tr><td colspan="5" style="text-align: center; color: #a0aec0;">登録済みの定期収入がありません</td></tr>';
+            
+            let expenseHtml = '';
+            expenses.forEach((item, idx) => {
+                expenseHtml += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${formatCurrency(item.amount)}</td>
+                        <td>${item.cycle === 'monthly' ? '月次' : item.cycle === 'weekly' ? '週次' : '日次'}</td>
+                        <td>${item.date}日</td>
+                        <td><button type="button" class="btn-danger" onclick="deleteRecurringExpense(${idx})">削除</button></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('recurringExpenseList').innerHTML = expenseHtml || '<tr><td colspan="5" style="text-align: center; color: #a0aec0;">登録済みの定期支出がありません</td></tr>';
+        }
+        
+        function handleRevenueItemSubmit(e) {
+            e.preventDefault();
+            
+            const name = (isRevenueNewMode()
+                ? document.getElementById('revenueItemNameNew').value.trim()
+                : document.getElementById('revenueItemSelect').value.trim());
+            const amount = Number(document.getElementById('revenueItemAmount').value) || 0;
+            
+            if (!name) {
+                alert('項目を選ぶか、「＋ 新しい項目を追加」で名前を入力してください');
+                return;
+            }
+            
+            if (amount <= 0) {
+                alert('金額を入力してください');
+                return;
+            }
+            
+            const today = formatDate(new Date());
+            const history = Storage.getDailyHistory();
+            
+            if (!history[today]) {
+                history[today] = { revenue: [], expense: [] };
+            }
+            
+            // 配列形式に対応
+            if (!Array.isArray(history[today].revenue)) {
+                history[today].revenue = [];
+            }
+            
+            history[today].revenue.push({ name, amount });
+            Storage.setDailyHistory(history);
+            addRevenueItemName(name);
+            renderRevenueSelect(name);
+            
+            document.getElementById('revenueItemNameNew').value = '';
+            document.getElementById('revenueItemAmount').value = '';
+            
+            updateRevenueList();
+            updateDisplay();
+            updateCalendar();
+            showMessage('売上項目を追加しました');
+        }
+        
+        function addRevenueItemName(name) {
+            const items = Storage.getRevenueItems();
+            if (!items.includes(name)) {
+                items.push(name);
+                Storage.setRevenueItems(items);
+            }
+        }
+
+        function addExpenseItemName(name) {
+            const items = Storage.getExpenseItems();
+            if (!items.includes(name)) {
+                items.push(name);
+                Storage.setExpenseItems(items);
+            }
+        }
+
+        // プルダウンの中身を作る（既存項目 ＋「新しい項目を追加」）
+        function itemOptionsHtml(items, selected) {
+            if (!items.length) return '<option value="">項目がありません</option>';
+            return '<option value="">項目を選択</option>' +
+                items.map(n => `<option value="${escapeHtml(n)}"${n === selected ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('');
+        }
+
+        // ----- 売上：一覧から選ぶ / 新しい項目を追加 -----
+        function renderRevenueSelect(selected) {
+            const sel = document.getElementById('revenueItemSelect');
+            if (!sel) return;
+            const items = Storage.getRevenueItems();
+            sel.innerHTML = itemOptionsHtml(items, selected);
+            if (items.length) revenueShowPick(); else revenueShowNew();
+        }
+        function revenueShowNew() {
+            document.getElementById('revenuePickMode').style.display = 'none';
+            document.getElementById('revenueNewMode').style.display = 'block';
+            document.getElementById('revenueItemNameNew').focus();
+        }
+        function revenueShowPick() {
+            document.getElementById('revenueNewMode').style.display = 'none';
+            document.getElementById('revenuePickMode').style.display = 'block';
+        }
+        function isRevenueNewMode() {
+            const m = document.getElementById('revenueNewMode');
+            return m && m.style.display !== 'none';
+        }
+
+        // ----- 支出：一覧から選ぶ / 新しい項目を追加 -----
+        function renderExpenseSelect(selected) {
+            const sel = document.getElementById('expenseItemSelect');
+            if (!sel) return;
+            const items = Storage.getExpenseItems();
+            sel.innerHTML = itemOptionsHtml(items, selected);
+            if (items.length) expenseShowPick(); else expenseShowNew();
+        }
+        function expenseShowNew() {
+            document.getElementById('expensePickMode').style.display = 'none';
+            document.getElementById('expenseNewMode').style.display = 'block';
+            document.getElementById('expenseItemNameNew').focus();
+        }
+        function expenseShowPick() {
+            document.getElementById('expenseNewMode').style.display = 'none';
+            document.getElementById('expensePickMode').style.display = 'block';
+        }
+        function isExpenseNewMode() {
+            const m = document.getElementById('expenseNewMode');
+            return m && m.style.display !== 'none';
+        }
+
+        function updateRevenueList() {
+            const today = formatDate(new Date());
+            const history = Storage.getDailyHistory();
+            const record = history[today];
+            
+            const revenue = Array.isArray(record?.revenue) ? record.revenue : [];
+            
+            let html = '';
+            let totalAmount = 0;
+            
+            revenue.forEach((item, idx) => {
+                html += `
+                    <div class="amt-row" style="padding: 13px 14px; background: linear-gradient(135deg,#F2FBF6,#EAF7F0); border:1px solid #DCF0E5; border-left: 3px solid #0E9E6B; border-radius: 12px; margin-bottom: 8px;">
+                        <div class="amt-main" style="font-weight: 600; color: #191B2E;">${escapeHtml(item.name)}</div>
+                        <div class="amt-val" style="font-weight: 600; color: #0E9E6B;">${formatCurrency(item.amount)}</div>
+                        <button type="button" onclick="deleteRevenueItem(${idx})" class="btn-danger amt-act">削除</button>
+                    </div>
+                `;
+                totalAmount += item.amount;
+            });
+            
+            document.getElementById('revenueItemsList').innerHTML = html;
+            
+            if (revenue.length > 0) {
+                document.getElementById('revenueSummary').style.display = 'block';
+                document.getElementById('revenueTotalAmount').textContent = formatCurrency(totalAmount);
+            } else {
+                document.getElementById('revenueSummary').style.display = 'none';
+            }
+        }
+        
+        function deleteRevenueItem(idx) {
+            if (confirm('削除しますか？')) {
+                const today = formatDate(new Date());
+                const history = Storage.getDailyHistory();
+                
+                if (history[today] && Array.isArray(history[today].revenue)) {
+                    history[today].revenue.splice(idx, 1);
+                    Storage.setDailyHistory(history);
+                    updateRevenueList();
+                    updateDisplay();
+                    updateCalendar();
+                    showMessage('削除しました');
+                }
+            }
+        }
+        
+        function handleExpenseItemSubmit(e) {
+            e.preventDefault();
+            
+            const name = (isExpenseNewMode()
+                ? document.getElementById('expenseItemNameNew').value.trim()
+                : document.getElementById('expenseItemSelect').value.trim());
+            const amount = Number(document.getElementById('expenseItemAmount').value) || 0;
+            
+            if (!name) {
+                alert('項目を選ぶか、「＋ 新しい項目を追加」で名前を入力してください');
+                return;
+            }
+            
+            if (amount <= 0) {
+                alert('金額を入力してください');
+                return;
+            }
+            
+            const today = formatDate(new Date());
+            const history = Storage.getDailyHistory();
+            
+            if (!history[today]) {
+                history[today] = { revenue: [], expense: [] };
+            }
+            
+            // 配列形式に対応
+            if (!Array.isArray(history[today].expense)) {
+                history[today].expense = [];
+            }
+            
+            history[today].expense.push({ name, amount });
+            Storage.setDailyHistory(history);
+            addExpenseItemName(name);
+            renderExpenseSelect(name);
+            
+            document.getElementById('expenseItemNameNew').value = '';
+            document.getElementById('expenseItemAmount').value = '';
+            
+            updateExpenseList();
+            updateDisplay();
+            updateCalendar();
+            showMessage('支出項目を追加しました');
+        }
+        
+        function updateExpenseList() {
+            const today = formatDate(new Date());
+            const history = Storage.getDailyHistory();
+            const record = history[today];
+            
+            const expense = Array.isArray(record?.expense) ? record.expense : [];
+            
+            let html = '';
+            let totalAmount = 0;
+            
+            expense.forEach((item, idx) => {
+                html += `
+                    <div class="amt-row" style="padding: 13px 14px; background: linear-gradient(135deg,#FEF4F0,#FBEAE2); border:1px solid #F6DACE; border-left: 3px solid #EF6238; border-radius: 12px; margin-bottom: 8px;">
+                        <div class="amt-main" style="font-weight: 600; color: #191B2E;">${escapeHtml(item.name)}</div>
+                        <div class="amt-val" style="font-weight: 600; color: #EF6238;">${formatCurrency(item.amount)}</div>
+                        <button type="button" onclick="deleteExpenseItem(${idx})" class="btn-danger amt-act">削除</button>
+                    </div>
+                `;
+                totalAmount += item.amount;
+            });
+            
+            document.getElementById('expenseItemsList').innerHTML = html;
+            
+            if (expense.length > 0) {
+                document.getElementById('expenseSummary').style.display = 'block';
+                document.getElementById('expenseTotalAmount').textContent = formatCurrency(totalAmount);
+            } else {
+                document.getElementById('expenseSummary').style.display = 'none';
+            }
+        }
+        
+        function deleteExpenseItem(idx) {
+            if (confirm('削除しますか？')) {
+                const today = formatDate(new Date());
+                const history = Storage.getDailyHistory();
+                
+                if (history[today] && Array.isArray(history[today].expense)) {
+                    history[today].expense.splice(idx, 1);
+                    Storage.setDailyHistory(history);
+                    updateExpenseList();
+                    updateDisplay();
+                    updateCalendar();
+                    showMessage('削除しました');
+                }
+            }
+        }
+        
+        function handleRecurringIncomeSubmit(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('recurringIncomeName').value;
+            const amount = document.getElementById('recurringIncomeAmount').value;
+            const cycle = document.getElementById('recurringIncomeCycle').value;
+            const date = document.getElementById('recurringIncomeDate').value;
+            
+            if (!name || !amount || !date) {
+                alert('すべて入力してください');
+                return;
+            }
+            
+            const recurring = Storage.getRecurringIncome();
+            recurring.push({ name: String(name), amount: Number(amount), cycle, date: Number(date) });
+            Storage.setRecurringIncome(recurring);
+            
+            document.getElementById('recurringIncomeName').value = '';
+            document.getElementById('recurringIncomeAmount').value = '';
+            document.getElementById('recurringIncomeDate').value = '1';
+            
+            updateRecurringLists();
+            updateDisplay();
+            updateCalendar();
+            showMessage('定期収入を追加しました');
+        }
+        
+        function handleRecurringExpenseSubmit(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('recurringExpenseName').value;
+            const amount = document.getElementById('recurringExpenseAmount').value;
+            const cycle = document.getElementById('recurringExpenseCycle').value;
+            const date = document.getElementById('recurringExpenseDate').value;
+            
+            if (!name || !amount || !date) {
+                alert('すべて入力してください');
+                return;
+            }
+            
+            const recurring = Storage.getRecurringExpense();
+            recurring.push({ name: String(name), amount: Number(amount), cycle, date: Number(date) });
+            Storage.setRecurringExpense(recurring);
+            
+            document.getElementById('recurringExpenseName').value = '';
+            document.getElementById('recurringExpenseAmount').value = '';
+            document.getElementById('recurringExpenseDate').value = '15';
+            
+            updateRecurringLists();
+            updateDisplay();
+            updateCalendar();
+            showMessage('定期支出を追加しました');
+        }
+        
+        function deleteRecurringIncome(idx) {
+            if (confirm('削除しますか？')) {
+                const recurring = Storage.getRecurringIncome();
+                recurring.splice(idx, 1);
+                Storage.setRecurringIncome(recurring);
+                updateRecurringLists();
+                updateDisplay();
+                updateCalendar();
+                showMessage('削除しました');
+            }
+        }
+        
+        function deleteRecurringExpense(idx) {
+            if (confirm('削除しますか？')) {
+                const recurring = Storage.getRecurringExpense();
+                recurring.splice(idx, 1);
+                Storage.setRecurringExpense(recurring);
+                updateRecurringLists();
+                updateDisplay();
+                updateCalendar();
+                showMessage('削除しました');
+            }
+        }
+        
+        // 収益源（売上項目）ごとの当月実績を集計
+        function getMonthlyRevenueByItem() {
+            const now = new Date();
+            const y = now.getFullYear(), m = now.getMonth() + 1;
+            const hist = Storage.getDailyHistory();
+            const out = {};
+            Object.keys(hist).forEach(d => {
+                const parts = d.split('-').map(Number);
+                if (parts[0] !== y || parts[1] !== m) return;
+                const rec = hist[d];
+                if (rec && Array.isArray(rec.revenue)) {
+                    rec.revenue.forEach(it => {
+                        if (it && it.name) out[it.name] = (out[it.name] || 0) + (Number(it.amount) || 0);
+                    });
+                }
+            });
+            return out;
+        }
+
+        function renderTargets() {
+            const cont = document.getElementById('targetItemsContainer');
+            if (!cont) return;
+            const items = Storage.getRevenueItems();
+            const targets = Storage.getTargets();
+            const itTargets = targets.items || {};
+            const actuals = getMonthlyRevenueByItem();
+
+            if (!items.length) {
+                cont.innerHTML = '<p style="color:#A0AEC0; font-size:14px;">まだ売上項目がありません。「本日の記録」で売上を追加すると、ここに収益源ごとの目標を設定できます。</p>';
+                return;
+            }
+            cont.innerHTML = items.map((n, i) => {
+                const tgt = Number(itTargets[n] || 0);
+                const act = Number(actuals[n] || 0);
+                const pct = tgt > 0 ? Math.min(100, Math.round(act / tgt * 100)) : 0;
+                const barColor = pct >= 100 ? '#06A77D' : '#5A67D8';
+                return `
+                <div style="padding:14px 0; border-bottom:1px solid #EDF2F7;">
+                    <div class="amt-row" style="margin-bottom:6px;">
+                        <div class="amt-main" style="font-weight:600; color:#2D3748;">${escapeHtml(n)}</div>
+                        <div class="amt-val" style="color:#718096; font-size:13px;">${formatCurrency(act)} / ${tgt > 0 ? formatCurrency(tgt) : '—'}</div>
+                    </div>
+                    <div style="height:8px; background:#EDF2F7; border-radius:999px; overflow:hidden; margin-bottom:10px;">
+                        <div style="height:100%; width:${pct}%; background:${barColor};"></div>
+                    </div>
+                    <div class="amt-row">
+                        <label class="amt-main" style="font-size:13px; color:#718096;">今月の目標</label>
+                        <input type="number" data-target-idx="${i}" value="${tgt || ''}" placeholder="0" step="10000" class="form-control amt-act" style="width:150px; text-align:right;">
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function saveItemTargets() {
+            const targets = Storage.getTargets();
+            const items = Storage.getRevenueItems();
+            const map = targets.items || {};
+            document.querySelectorAll('[data-target-idx]').forEach(inp => {
+                const name = items[Number(inp.getAttribute('data-target-idx'))];
+                if (name == null) return;
+                const v = Number(inp.value) || 0;
+                if (v > 0) map[name] = v; else delete map[name];
+            });
+            targets.items = map;
+            Storage.setTargets(targets);
+            renderTargets();
+            showMessage('目標を保存しました');
+        }
+
+        function prevMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            updateCalendar();
+        }
+        
+        function nextMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            updateCalendar();
+        }
+        
+        function todayMonth() {
+            currentCalendarDate = new Date();
+            updateCalendar();
+        }
+        
+        function switchPage(pageId) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
+            
+            const pages = ['dashboard', 'calendar', 'recurring', 'targets', 'accounts', 'data'];
+            const pageIndex = pages.indexOf(pageId);
+            
+            if (pageIndex >= 0) {
+                const allNavItems = document.querySelectorAll('.nav-item');
+                if (allNavItems[pageIndex]) allNavItems[pageIndex].classList.add('active');
+                
+                const bottomItems = document.querySelectorAll('.bottom-nav-item');
+                if (bottomItems[pageIndex]) bottomItems[pageIndex].classList.add('active');
+            }
+            
+            if (pageId === 'calendar') {
+                updateCalendar();
+            }
+            if (pageId === 'recurring') {
+                updateRecurringLists();
+            }
+            if (pageId === 'accounts') {
+                renderAccounts();
+            }
+            if (pageId === 'targets') {
+                renderTargets();
+            }
+        }
+        
+        // ===== 口座・資産レイヤー（増分1）=====
+        function genId() {
+            return 'acc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+        }
+
+        // 非破壊マイグレーション：既存キーには一切触れず、新キーのみ補完
+        function migrateSchema() {
+            if (!localStorage.getItem('schema_version')) {
+                localStorage.setItem('schema_version', '2');
+            }
+            if (localStorage.getItem('accounts') === null) {
+                Storage.setAccounts([]);
+            }
+            if (localStorage.getItem('networth_history') === null) {
+                Storage.setNetworthHistory({});
+            }
+            if (localStorage.getItem('holdings_log') === null) {
+                Storage.setHoldingsLog([]);
+            }
+            if (localStorage.getItem('revenue_items') === null) {
+                // 既存の記録から売上項目名を拾って初期登録
+                const names = new Set();
+                const hist = Storage.getDailyHistory();
+                Object.values(hist).forEach(rec => {
+                    if (rec && Array.isArray(rec.revenue)) {
+                        rec.revenue.forEach(it => { if (it && it.name) names.add(it.name); });
+                    }
+                });
+                Storage.setRevenueItems([...names]);
+            }
+            if (localStorage.getItem('expense_items') === null) {
+                // 既存の記録から支出項目名を拾って初期登録
+                const enames = new Set();
+                const hist2 = Storage.getDailyHistory();
+                Object.values(hist2).forEach(rec => {
+                    if (rec && Array.isArray(rec.expense)) {
+                        rec.expense.forEach(it => { if (it && it.name) enames.add(it.name); });
+                    }
+                });
+                Storage.setExpenseItems([...enames]);
+            }
+        }
+
+        function accountTypeLabel(type) {
+            return ({ bank: '🏦 銀行', securities: '📈 証券', cash: '💵 現金', emoney: '💳 電子マネー' })[type] || type;
+        }
+
+        function computeCashTotal() {
+            return Storage.getAccounts().reduce((s, a) => s + (Number(a.balance) || 0), 0);
+        }
+
+        // 投資元本＝取得記録の取得金額の累計（時価評価は持たない）
+        function computeAssetTotal() {
+            return Storage.getHoldingsLog().reduce((s, h) => s + (Number(h.amount) || 0), 0);
+        }
+
+        // 当日の純資産スナップショットを保存（推移トラッキングの種）
+        function recordNetworthSnapshot() {
+            const cash = computeCashTotal();
+            const assets = computeAssetTotal();
+            const hist = Storage.getNetworthHistory();
+            hist[formatDate(new Date())] = { cash, assets, total: cash + assets };
+            Storage.setNetworthHistory(hist);
+        }
+
+        function renderAccounts() {
+            const accounts = Storage.getAccounts();
+            const cash = computeCashTotal();
+            const assets = computeAssetTotal();
+            const elTotal = document.getElementById('nwTotal');
+            const elCash = document.getElementById('nwCash');
+            const elAssets = document.getElementById('nwAssets');
+            if (elTotal) elTotal.textContent = formatCurrency(cash + assets);
+            if (elCash) elCash.textContent = formatCurrency(cash);
+            if (elAssets) elAssets.textContent = formatCurrency(assets);
+
+            const list = document.getElementById('accountList');
+            if (!list) { populateHoldAccountSelect(); renderHoldings(); return; }
+            if (accounts.length === 0) {
+                list.innerHTML = '<p style="color:#A0AEC0; font-size:14px; padding:8px 0;">まだ口座がありません。上のフォームから追加してください。</p>';
+                populateHoldAccountSelect();
+                renderHoldings();
+                return;
+            }
+            list.innerHTML = accounts.map(a => `
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #EDF2F7;">
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:600; color:#2D3748; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(a.name)}</div>
+                        <div style="font-size:12px; color:#718096;">${accountTypeLabel(a.type)}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="color:#718096; font-size:13px;">¥</span>
+                        <input type="number" value="${Number(a.balance) || 0}" step="1"
+                            onchange="updateAccountBalance('${a.id}', this.value)"
+                            class="form-control num" style="width:120px; padding:6px 8px;">
+                    </div>
+                    <button class="btn-danger" style="padding:6px 10px; font-size:12px;" onclick="deleteAccount('${a.id}')">削除</button>
+                </div>
+            `).join('');
+
+            populateHoldAccountSelect();
+            renderHoldings();
+        }
+
+        // ===== 取得記録（買った履歴）=====
+        const ASSET_CLASS_LABEL = { jp_stock: '日本株', us_stock: '米国株', etf: 'ETF', fund: '投資信託', other: 'その他', '': '' };
+
+        function accountName(id) {
+            const a = Storage.getAccounts().find(x => x.id === id);
+            return a ? a.name : '';
+        }
+
+        function populateHoldAccountSelect() {
+            const sel = document.getElementById('holdAccount');
+            if (!sel) return;
+            const cur = sel.value;
+            const opts = ['<option value="">未設定</option>']
+                .concat(Storage.getAccounts().map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`));
+            sel.innerHTML = opts.join('');
+            sel.value = cur;
+        }
+
+        function handleHoldingSubmit(event) {
+            event.preventDefault();
+            const date = document.getElementById('holdDate').value || formatDate(new Date());
+            const name = document.getElementById('holdName').value.trim();
+            const amount = Number(document.getElementById('holdAmount').value) || 0;
+            const kind = document.getElementById('holdKind').value;
+            const assetClass = document.getElementById('holdClass').value;
+            const accountId = document.getElementById('holdAccount').value;
+            const qty = document.getElementById('holdQty').value;
+            const unit = document.getElementById('holdUnit').value;
+            if (!name || !amount) return;
+
+            const log = Storage.getHoldingsLog();
+            log.push({
+                id: 'hold_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                date, name, amount, kind, assetClass, accountId,
+                quantity: qty === '' ? null : Number(qty),
+                unitPrice: unit === '' ? null : Number(unit)
+            });
+            Storage.setHoldingsLog(log);
+            recordNetworthSnapshot();
+
+            // フォームを軽くリセット（日付・銘柄は残さずクリア）
+            document.getElementById('holdName').value = '';
+            document.getElementById('holdAmount').value = '';
+            document.getElementById('holdQty').value = '';
+            document.getElementById('holdUnit').value = '';
+            renderHoldings();
+            renderAccountSummaryOnly();
+            showMessage('取得記録を追加しました');
+        }
+
+        function deleteHolding(id) {
+            if (!confirm('この記録を削除しますか？')) return;
+            Storage.setHoldingsLog(Storage.getHoldingsLog().filter(h => h.id !== id));
+            recordNetworthSnapshot();
+            renderHoldings();
+            renderAccountSummaryOnly();
+            showMessage('削除しました');
+        }
+
+        // サマリー数値だけ更新（口座リストの再描画は不要なとき）
+        function renderAccountSummaryOnly() {
+            const cash = computeCashTotal(), assets = computeAssetTotal();
+            const t = document.getElementById('nwTotal'), c = document.getElementById('nwCash'), a = document.getElementById('nwAssets');
+            if (t) t.textContent = formatCurrency(cash + assets);
+            if (c) c.textContent = formatCurrency(cash);
+            if (a) a.textContent = formatCurrency(assets);
+        }
+
+        function renderHoldings() {
+            const log = Storage.getHoldingsLog().slice();
+
+            // 銘柄別サマリー
+            const sumEl = document.getElementById('holdingsSummary');
+            if (sumEl) {
+                if (log.length === 0) {
+                    sumEl.innerHTML = '<p style="color:#A0AEC0; font-size:14px;">まだ取得記録がありません。</p>';
+                } else {
+                    const byName = {};
+                    log.forEach(h => {
+                        if (!byName[h.name]) byName[h.name] = { name: h.name, total: 0, qty: 0, count: 0, hasQty: false, classes: new Set(), kinds: new Set() };
+                        const g = byName[h.name];
+                        g.total += Number(h.amount) || 0;
+                        g.count += 1;
+                        if (h.quantity != null) { g.qty += Number(h.quantity) || 0; g.hasQty = true; }
+                        if (h.assetClass) g.classes.add(ASSET_CLASS_LABEL[h.assetClass] || h.assetClass);
+                        g.kinds.add(h.kind === 'tsumitate' ? '積立' : 'スポット');
+                    });
+                    const groups = Object.values(byName).sort((a, b) => b.total - a.total);
+                    sumEl.innerHTML = groups.map(g => {
+                        const avg = g.hasQty && g.qty > 0 ? '　平均単価 ' + formatCurrency(g.total / g.qty) : '';
+                        const cls = g.classes.size ? `<span style="font-size:11px; color:#fff; background:#5A67D8; border-radius:4px; padding:1px 6px; margin-left:6px;">${[...g.classes].join('/')}</span>` : '';
+                        const kindBadge = [...g.kinds].map(k => `<span style="font-size:11px; color:${k === '積立' ? '#06A77D' : '#FF6B35'};">${k}</span>`).join(' ');
+                        return `
+                        <div style="padding:12px 0; border-bottom:1px solid #EDF2F7;">
+                            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+                                <div style="font-weight:600; color:#2D3748;">${escapeHtml(g.name)}${cls}</div>
+                                <div class="num" style="font-weight:700; color:#5A67D8; white-space:nowrap; min-width:110px; text-align:right;">${formatCurrency(g.total)}</div>
+                            </div>
+                            <div style="font-size:12px; color:#718096; margin-top:2px;">${g.count}回 ${kindBadge}${g.hasQty ? '　保有 ' + g.qty : ''}${avg}</div>
+                        </div>`;
+                    }).join('');
+                }
+            }
+
+            // 履歴一覧（新しい順）
+            const listEl = document.getElementById('holdingsList');
+            if (listEl) {
+                if (log.length === 0) {
+                    listEl.innerHTML = '<p style="color:#A0AEC0; font-size:14px;">記録はまだありません。</p>';
+                } else {
+                    const sorted = log.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+                    listEl.innerHTML = sorted.map(h => {
+                        const kind = h.kind === 'tsumitate'
+                            ? '<span style="font-size:11px; color:#fff; background:#06A77D; border-radius:4px; padding:1px 6px;">積立</span>'
+                            : '<span style="font-size:11px; color:#fff; background:#FF6B35; border-radius:4px; padding:1px 6px;">スポット</span>';
+                        const acc = h.accountId ? `　${escapeHtml(accountName(h.accountId))}` : '';
+                        const detail = (h.quantity != null || h.unitPrice != null)
+                            ? `<div style="font-size:11px; color:#A0AEC0;">${h.quantity != null ? h.quantity + '口/株' : ''}${h.unitPrice != null ? ' × ' + formatCurrency(h.unitPrice) : ''}</div>`
+                            : '';
+                        return `
+                        <div style="display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid #EDF2F7;">
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-weight:600; color:#2D3748;">${escapeHtml(h.name)} ${kind}</div>
+                                <div style="font-size:12px; color:#718096;">${h.date}${acc}</div>
+                                ${detail}
+                            </div>
+                            <div class="num" style="font-weight:600; color:#2D3748; white-space:nowrap; min-width:100px; text-align:right;">${formatCurrency(h.amount)}</div>
+                            <button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteHolding('${h.id}')">削除</button>
+                        </div>`;
+                    }).join('');
+                }
+            }
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        function handleAccountSubmit(event) {
+            event.preventDefault();
+            const name = document.getElementById('accountName').value.trim();
+            const type = document.getElementById('accountType').value;
+            const balance = Number(document.getElementById('accountBalance').value) || 0;
+            if (!name) return;
+            const accounts = Storage.getAccounts();
+            accounts.push({ id: genId(), name, type, balance, assets: 0 });
+            Storage.setAccounts(accounts);
+            recordNetworthSnapshot();
+            document.getElementById('accountName').value = '';
+            document.getElementById('accountBalance').value = '';
+            renderAccounts();
+            showMessage('口座を追加しました');
+        }
+
+        function updateAccountBalance(id, value) {
+            const accounts = Storage.getAccounts();
+            const acc = accounts.find(a => a.id === id);
+            if (!acc) return;
+            acc.balance = Number(value) || 0;
+            Storage.setAccounts(accounts);
+            recordNetworthSnapshot();
+            renderAccounts();
+            showMessage('残高を更新しました');
+        }
+
+        function deleteAccount(id) {
+            if (!confirm('この口座を削除しますか？')) return;
+            Storage.setAccounts(Storage.getAccounts().filter(a => a.id !== id));
+            recordNetworthSnapshot();
+            renderAccounts();
+            showMessage('口座を削除しました');
+        }
+
+        // 画面全体を再描画（クラウド読み込み後などに使用）
+        function renderAll() {
+            try { updateDisplay(); } catch (e) {}
+            try { updateRecurringLists(); } catch (e) {}
+            try { updateRevenueList(); } catch (e) {}
+            try { updateExpenseList(); } catch (e) {}
+            try { renderRevenueSelect(); } catch (e) {}
+            try { renderExpenseSelect(); } catch (e) {}
+            try { renderTargets(); } catch (e) {}
+            try { renderAccounts(); } catch (e) {}
+            try { updateCalendar(); } catch (e) {}
+        }
+
+        // ===== クラウド同期（Cloudflare Workers + KV / 端末側でAES暗号化）=====
+        // デフォルトの同期サーバー（凌さんのWorker）。URL欄を空にしてもこれが使われます
+        const DEFAULT_CLOUD_URL = 'https://seven-pockets-sync.ryo-i1020gold.workers.dev';
+
+        // 合言葉の表示/非表示（type=textのまま -webkit-text-security で隠す＝日本語IMEが使える）
+        function togglePassVisible() {
+            const inp = document.getElementById('cloudPass');
+            const btn = document.getElementById('cloudPassToggle');
+            if (!inp) return;
+            const hidden = inp.style.webkitTextSecurity !== 'none';
+            inp.style.webkitTextSecurity = hidden ? 'none' : 'disc';
+            if (btn) btn.textContent = hidden ? '隠す' : '表示';
+        }
+
+        const Cloud = {
+            _applying: false,
+            _ready: false,
+            _timer: null,
+
+            cfg() {
+                return {
+                    url: (localStorage.getItem('cloud_url') || DEFAULT_CLOUD_URL).trim(),
+                    pass: (localStorage.getItem('cloud_pass') || ''),
+                    auto: localStorage.getItem('cloud_auto') === '1'
+                };
+            },
+            setUrl(v) { localStorage.setItem('cloud_url', (v || '').trim()); },
+            setPass(v) { localStorage.setItem('cloud_pass', v || ''); },
+            configured() { const c = Cloud.cfg(); return !!(c.url && c.pass); },
+            status(msg, kind) {
+                const el = document.getElementById('cloudStatus');
+                if (!el) return;
+                el.textContent = msg;
+                el.style.color = kind === 'err' ? 'var(--coral)' : (kind === 'ok' ? 'var(--emerald)' : 'var(--muted)');
+            },
+            setAuto(on) {
+                localStorage.setItem('cloud_auto', on ? '1' : '0');
+                if (on) { Cloud.status('自動同期をオンにしました'); Cloud.loadNow(); }
+                else { Cloud.status('自動同期をオフにしました'); }
+            },
+
+            // ---- 暗号化（PBKDF2 + AES-GCM）----
+            async _keyId(pass) {
+                const d = new TextEncoder().encode('seven-pockets-id-v1:' + pass);
+                const h = await crypto.subtle.digest('SHA-256', d);
+                return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join('');
+            },
+            async _aesKey(pass) {
+                const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+                return crypto.subtle.deriveKey(
+                    { name: 'PBKDF2', salt: new TextEncoder().encode('seven-pockets-salt-v1'), iterations: 120000, hash: 'SHA-256' },
+                    km, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+            },
+            _b64(u8) { let s = ''; u8.forEach(b => s += String.fromCharCode(b)); return btoa(s); },
+            _ub64(b64) { const s = atob(b64); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; },
+            async _encrypt(pass, obj) {
+                const key = await Cloud._aesKey(pass);
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
+                return JSON.stringify({ v: 1, iv: Cloud._b64(iv), ct: Cloud._b64(new Uint8Array(ct)) });
+            },
+            async _decrypt(pass, blobText) {
+                const blob = JSON.parse(blobText);
+                const key = await Cloud._aesKey(pass);
+                const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: Cloud._ub64(blob.iv) }, key, Cloud._ub64(blob.ct));
+                return JSON.parse(new TextDecoder().decode(pt));
+            },
+
+            _collect() {
+                return {
+                    daily_history: Storage.getDailyHistory(),
+                    recurring_income: Storage.getRecurringIncome(),
+                    recurring_expense: Storage.getRecurringExpense(),
+                    targets: Storage.getTargets(),
+                    accounts: Storage.getAccounts(),
+                    networth_history: Storage.getNetworthHistory(),
+                    holdings_log: Storage.getHoldingsLog(),
+                    revenue_items: Storage.getRevenueItems(),
+                    expense_items: Storage.getExpenseItems(),
+                    schema_version: 2,
+                    exported_at: new Date().toISOString()
+                };
+            },
+            _endpoint(id) { return Cloud.cfg().url.replace(/\/+$/, '') + '/d/' + id; },
+
+            async push() {
+                const c = Cloud.cfg();
+                if (!c.url || !c.pass) return false;
+                const id = await Cloud._keyId(c.pass);
+                const body = await Cloud._encrypt(c.pass, Cloud._collect());
+                const res = await fetch(Cloud._endpoint(id), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return true;
+            },
+            async pull() {
+                const c = Cloud.cfg();
+                if (!c.url || !c.pass) return null;
+                const id = await Cloud._keyId(c.pass);
+                const res = await fetch(Cloud._endpoint(id), { method: 'GET' });
+                if (res.status === 404) return null;
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const txt = await res.text();
+                if (!txt || txt === '{}') return null;
+                return Cloud._decrypt(c.pass, txt);
+            },
+
+            _apply(data) {
+                Cloud._applying = true;
+                try {
+                    Storage.setDailyHistory(data.daily_history || {});
+                    Storage.setRecurringIncome(data.recurring_income || []);
+                    Storage.setRecurringExpense(data.recurring_expense || []);
+                    Storage.setTargets(data.targets || {});
+                    if (data.accounts !== undefined) Storage.setAccounts(data.accounts || []);
+                    if (data.networth_history !== undefined) Storage.setNetworthHistory(data.networth_history || {});
+                    if (data.holdings_log !== undefined) Storage.setHoldingsLog(data.holdings_log || []);
+                    if (data.revenue_items !== undefined) Storage.setRevenueItems(data.revenue_items || []);
+                    if (data.expense_items !== undefined) Storage.setExpenseItems(data.expense_items || []);
+                    migrateSchema();
+                } finally { Cloud._applying = false; }
+                renderAll();
+            },
+
+            async saveNow() {
+                if (!Cloud.configured()) { Cloud.status('URLと合言葉を入力してください', 'err'); return; }
+                Cloud.status('保存中…');
+                try { await Cloud.push(); Cloud.status('保存しました（' + new Date().toLocaleString('ja-JP') + '）', 'ok'); showMessage('クラウドに保存しました'); }
+                catch (e) { Cloud.status('保存に失敗しました（' + e.message + '）', 'err'); }
+            },
+            async loadNow() {
+                if (!Cloud.configured()) { Cloud.status('URLと合言葉を入力してください', 'err'); return; }
+                Cloud.status('読み込み中…');
+                try {
+                    const data = await Cloud.pull();
+                    if (!data) { Cloud.status('クラウドにデータがありません（または合言葉が違います）'); return; }
+                    Cloud._apply(data);
+                    Cloud.status('読み込みました（' + new Date().toLocaleString('ja-JP') + '）', 'ok');
+                    showMessage('クラウドから読み込みました');
+                } catch (e) {
+                    Cloud.status('読み込みに失敗：合言葉が違うか通信エラーです', 'err');
+                }
+            },
+
+            onLocalChange() {
+                if (Cloud._applying || !Cloud._ready) return;
+                const c = Cloud.cfg();
+                if (!c.auto || !c.url || !c.pass) return;
+                clearTimeout(Cloud._timer);
+                Cloud._timer = setTimeout(() => {
+                    Cloud.push()
+                        .then(() => Cloud.status('自動保存しました（' + new Date().toLocaleString('ja-JP') + '）', 'ok'))
+                        .catch(() => Cloud.status('自動保存に失敗しました', 'err'));
+                }, 1500);
+            },
+
+            initUI() {
+                const c = Cloud.cfg();
+                const u = document.getElementById('cloudUrl');
+                if (u) { u.value = c.url; u.addEventListener('input', () => Cloud.setUrl(u.value)); }
+                const p = document.getElementById('cloudPass');
+                if (p) { p.value = c.pass; p.addEventListener('input', () => Cloud.setPass(p.value)); }
+                const a = document.getElementById('cloudAuto');
+                if (a) a.checked = c.auto;
+
+                if (c.auto && Cloud.configured()) {
+                    Cloud.status('自動同期：起動時の読み込み中…');
+                    Cloud.loadNow().finally(() => { Cloud._ready = true; });
+                } else {
+                    Cloud._ready = true;
+                    Cloud.status(Cloud.configured() ? '同期の準備ができています' : '未設定（URLと合言葉を入れると使えます）');
+                }
+            }
+        };
+
+        // Storage の保存をフックして、自動同期オン時に自動保存
+        ['setDailyHistory', 'setRecurringIncome', 'setRecurringExpense', 'setTargets', 'setAccounts', 'setNetworthHistory', 'setHoldingsLog', 'setRevenueItems', 'setExpenseItems'].forEach(fn => {
+            const orig = Storage[fn];
+            Storage[fn] = function (...args) {
+                const r = orig.apply(Storage, args);
+                try { Cloud.onLocalChange(); } catch (e) {}
+                return r;
+            };
+        });
+
+        function exportData() {
+            const data = {
+                daily_history: Storage.getDailyHistory(),
+                recurring_income: Storage.getRecurringIncome(),
+                recurring_expense: Storage.getRecurringExpense(),
+                targets: Storage.getTargets(),
+                accounts: Storage.getAccounts(),
+                networth_history: Storage.getNetworthHistory(),
+                holdings_log: Storage.getHoldingsLog(),
+                revenue_items: Storage.getRevenueItems(),
+                expense_items: Storage.getExpenseItems(),
+                schema_version: 2,
+                exported_at: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'seven-pockets-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            showMessage('ダウンロードしました');
+        }
+        
+        function importData() {
+            const json = document.getElementById('importText').value;
+            if (!json.trim()) {
+                alert('JSONを貼り付けるか、ファイルを選んでください');
+                return;
+            }
+            restoreFromJsonText(json);
+        }
+
+        // ファイルをUTF-8固定で読み込む（コピペの文字化けを根本から回避）
+        function importFromFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => restoreFromJsonText(e.target.result);
+            reader.onerror = () => alert('ファイルの読み込みに失敗しました');
+            reader.readAsText(file, 'utf-8');
+        }
+
+        function handleImportFileInput(input) {
+            if (input.files && input.files[0]) importFromFile(input.files[0]);
+            input.value = '';
+        }
+
+        function handleImportDrop(e) {
+            e.preventDefault();
+            const zone = document.getElementById('importDropZone');
+            if (zone) zone.classList.remove('dragover');
+            const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+            if (file) importFromFile(file);
+        }
+
+        function handleImportDragOver(e) {
+            e.preventDefault();
+            const zone = document.getElementById('importDropZone');
+            if (zone) zone.classList.add('dragover');
+        }
+
+        function handleImportDragLeave() {
+            const zone = document.getElementById('importDropZone');
+            if (zone) zone.classList.remove('dragover');
+        }
+
+        // 貼り付け・ファイルの両方が使う共通の復元処理
+        function restoreFromJsonText(text) {
+            try {
+                const data = JSON.parse(text);
+                Storage.setDailyHistory(data.daily_history || {});
+                Storage.setRecurringIncome(data.recurring_income || []);
+                Storage.setRecurringExpense(data.recurring_expense || []);
+                Storage.setTargets(data.targets || {});
+                // 新キーは「ファイルに含まれている場合のみ」上書き（旧バックアップで口座を消さない）
+                if (data.accounts !== undefined) Storage.setAccounts(data.accounts || []);
+                if (data.networth_history !== undefined) Storage.setNetworthHistory(data.networth_history || {});
+                if (data.holdings_log !== undefined) Storage.setHoldingsLog(data.holdings_log || []);
+                if (data.revenue_items !== undefined) Storage.setRevenueItems(data.revenue_items || []);
+                if (data.expense_items !== undefined) Storage.setExpenseItems(data.expense_items || []);
+                migrateSchema();
+                
+                updateDisplay();
+                showMessage('復元しました');
+                setTimeout(() => location.reload(), 1000);
+            } catch (e) {
+                alert('JSONが無効です');
+            }
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            migrateSchema();
+            updateDisplay();
+            updateRecurringLists();
+            updateRevenueList();
+            updateExpenseList();
+            renderRevenueSelect();
+            renderExpenseSelect();
+            renderTargets();
+            renderAccounts();
+            Cloud.initUI();
+            const hd = document.getElementById('holdDate');
+            if (hd) hd.value = formatDate(new Date());
+        });
+        
+        function showDayDetail(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            const date = new Date(year, month - 1, day);
+            
+            // 日付フォーマット
+            const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+            const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            const dateLabel = `${year}年${monthNames[date.getMonth()]}${date.getDate()}日 (${dayNames[date.getDay()]})`;
+            
+            // 履歴を取得
+            const history = Storage.getDailyHistory();
+            const record = history[dateStr];
+            
+            // 手入力売上（配列形式に対応）
+            let manualRevenue = 0;
+            let manualRevenueHtml = '';
+            if (record && Array.isArray(record.revenue)) {
+                record.revenue.forEach(item => {
+                    manualRevenueHtml += `<div class="detail-item revenue"><div class="detail-item-label">${item.name}</div><div class="detail-item-value">${formatCurrency(item.amount)}</div></div>`;
+                    manualRevenue += item.amount;
+                });
+            } else if (record && typeof record.revenue === 'number' && record.revenue > 0) {
+                manualRevenue = record.revenue;
+                manualRevenueHtml = `<div class="detail-item revenue"><div class="detail-item-label">手入力売上</div><div class="detail-item-value">${formatCurrency(record.revenue)}</div></div>`;
+            }
+            
+            // 手入力支出（配列形式に対応）
+            let manualExpense = 0;
+            let manualExpenseHtml = '';
+            if (record && Array.isArray(record.expense)) {
+                record.expense.forEach(item => {
+                    manualExpenseHtml += `<div class="detail-item expense"><div class="detail-item-label">${item.name}</div><div class="detail-item-value">${formatCurrency(item.amount)}</div></div>`;
+                    manualExpense += item.amount;
+                });
+            } else if (record && typeof record.expense === 'number' && record.expense > 0) {
+                manualExpense = record.expense;
+                manualExpenseHtml = `<div class="detail-item expense"><div class="detail-item-label">手入力支出</div><div class="detail-item-value">${formatCurrency(record.expense)}</div></div>`;
+            }
+            
+            // 定期分を取得
+            const recurring = getRecurringForDate(date);
+            
+            // 定期収入の詳細
+            let recurringIncomeHtml = '';
+            const incomes = Storage.getRecurringIncome();
+            const dateNum = date.getDate();
+            incomes.forEach(item => {
+                if (item.cycle === 'monthly' && item.date === dateNum) {
+                    recurringIncomeHtml += `<div class="detail-item revenue"><div class="detail-item-label">${item.name}</div><div class="detail-item-value">${formatCurrency(item.amount)}</div></div>`;
+                }
+            });
+            
+            // 定期支出の詳細
+            let recurringExpenseHtml = '';
+            const expenses = Storage.getRecurringExpense();
+            expenses.forEach(item => {
+                if (item.cycle === 'monthly' && item.date === dateNum) {
+                    recurringExpenseHtml += `<div class="detail-item expense"><div class="detail-item-label">${item.name}</div><div class="detail-item-value">${formatCurrency(item.amount)}</div></div>`;
+                }
+            });
+            
+            // 合計
+            const totalRevenue = manualRevenue + recurring.revenue;
+            const totalExpense = manualExpense + recurring.expense;
+            const profit = totalRevenue - totalExpense;
+            
+            // モーダルコンテンツを構築
+            let modalHtml = '';
+            
+            // 収入セクション
+            modalHtml += `<div class="detail-section">
+                <div class="detail-section-title">📈 収入</div>`;
+            if (manualRevenueHtml) {
+                modalHtml += manualRevenueHtml;
+            }
+            if (recurringIncomeHtml) {
+                modalHtml += recurringIncomeHtml;
+            }
+            if (!manualRevenueHtml && !recurringIncomeHtml) {
+                modalHtml += `<div style="padding: 10px; color: #a0aec0; text-align: center;">なし</div>`;
+            }
+            modalHtml += `<div class="detail-item" style="border-top: 1px solid #e2e8f0; padding-top: 10px; margin-top: 10px; font-weight: 600;">
+                <div class="detail-item-label">合計売上</div>
+                <div class="detail-item-value" style="color: #06A77D;">${formatCurrency(totalRevenue)}</div>
+            </div></div>`;
+            
+            // 支出セクション
+            modalHtml += `<div class="detail-section">
+                <div class="detail-section-title">📉 支出</div>`;
+            if (manualExpenseHtml) {
+                modalHtml += manualExpenseHtml;
+            }
+            if (recurringExpenseHtml) {
+                modalHtml += recurringExpenseHtml;
+            }
+            if (!manualExpenseHtml && !recurringExpenseHtml) {
+                modalHtml += `<div style="padding: 10px; color: #a0aec0; text-align: center;">なし</div>`;
+            }
+            modalHtml += `<div class="detail-item" style="border-top: 1px solid #e2e8f0; padding-top: 10px; margin-top: 10px; font-weight: 600;">
+                <div class="detail-item-label">合計支出</div>
+                <div class="detail-item-value" style="color: #FF6B35;">${formatCurrency(totalExpense)}</div>
+            </div></div>`;
+            
+            // 利益サマリー
+            modalHtml += `<div class="detail-summary">
+                <div class="detail-summary-item">
+                    <span>売上</span>
+                    <span style="color: #06A77D;">${formatCurrency(totalRevenue)}</span>
+                </div>
+                <div class="detail-summary-item">
+                    <span>支出</span>
+                    <span style="color: #FF6B35;">${formatCurrency(totalExpense)}</span>
+                </div>
+                <div class="detail-summary-item total profit">
+                    <span>利益</span>
+                    <span>${formatCurrency(profit)}</span>
+                </div>
+            </div>`;
+            
+            // モーダルを表示
+            document.getElementById('modalDate').textContent = dateLabel;
+            document.getElementById('modalBody').innerHTML = modalHtml;
+            document.getElementById('dayDetailModal').classList.add('show');
+        }
+        
+        function closeDayDetail() {
+            document.getElementById('dayDetailModal').classList.remove('show');
+        }
+        
+        // モーダル外クリックで閉じる
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('dayDetailModal');
+            if (e.target === modal) {
+                closeDayDetail();
+            }
+        });
+    </script>
+</body>
+</html>
