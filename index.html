@@ -168,7 +168,7 @@ const INITIAL_PRODUCTS = [{
   tone: "#E0C09A"
 }];
 const CATS = ["すべて", "美容", "健康", "食品"];
-const PARTNERS = [{
+const INITIAL_PARTNERS = [{
   code: "P0102",
   joined: "2025-04"
 }, {
@@ -331,6 +331,19 @@ function App() {
   const [notifyEmail, setNotifyEmail] = useState("order@aishitoto.co.jp");
   const [orderDetail, setOrderDetail] = useState(null);
   const [csvMonth, setCsvMonth] = useState("2026-07");
+  const [partners, setPartners] = useState(INITIAL_PARTNERS);
+  const [applications, setApplications] = useState([{
+    id: 1,
+    name: "田中 美咲",
+    email: "misaki@example.com",
+    phone: "090-1111-2222",
+    status: "審査待ち"
+  }]);
+  const [apName, setApName] = useState("");
+  const [apEmail, setApEmail] = useState("");
+  const [apPhone, setApPhone] = useState("");
+  const [apDone, setApDone] = useState(false);
+  const [showApply, setShowApply] = useState(false);
   const [auth, setAuth] = useState({
     partner: false,
     admin: false
@@ -416,6 +429,38 @@ function App() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     say(target.length + "件の受注をCSVでダウンロードしました。基幹システムに取り込んでください");
+  };
+  const applyPartner = () => {
+    if (!apName.trim() || !apEmail.trim()) return say("お名前とメールアドレスをご入力ください");
+    setApplications(a => [...a, {
+      id: a.length + 1,
+      name: apName.trim(),
+      email: apEmail.trim(),
+      phone: apPhone.trim(),
+      status: "審査待ち"
+    }]);
+    setApDone(true);
+    say("お申し込みを受け付けました。面接のご案内をメールでお送りします(デモ)");
+  };
+  const approveApp = (id, ok) => {
+    if (!ok) {
+      setApplications(a => a.map(x => x.id === id ? {
+        ...x,
+        status: "見送り"
+      } : x));
+      return say("お見送りにしました。結果をメールで通知します(デモ)");
+    }
+    const nums = partners.map(p => parseInt(p.code.slice(1), 10));
+    const code = "P" + String(Math.max.apply(null, nums) + 1).padStart(4, "0");
+    setPartners(ps => [...ps, {
+      code: code,
+      joined: "2026-07"
+    }]);
+    setApplications(a => a.map(x => x.id === id ? {
+      ...x,
+      status: "承認済み " + code
+    } : x));
+    say("承認しました。" + code + " と紹介URLを発行し、ログイン設定・振込口座登録の案内メールを送信しました(デモ)");
   };
   const cancelSub = subId => {
     setSubs(s => s.map(x => x.id === subId ? {
@@ -603,13 +648,7 @@ function App() {
       cursor: "pointer",
       width: "100%"
     }
-  }, kind === "partner" ? "パートナーとしてログイン(デモ)" : "管理者としてログイン(デモ)"), kind === "partner" && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: C.sub,
-      marginTop: 12
-    }
-  }, "パートナー登録がまだの方向けに「パートナー募集・申込」ページへの入口も設置できます。"));
+  }, kind === "partner" ? "パートナーとしてログイン(デモ)" : "管理者としてログイン(デモ)"));
   return /*#__PURE__*/React.createElement("div", {
     style: {
       minHeight: "100vh",
@@ -1152,9 +1191,82 @@ function App() {
       color: C.sub,
       marginTop: 12
     }
-  }, "※本番ではお客様もログイン制になり、自分の履歴だけが表示されます。領収書の発行やお届け先の変更もここに置けます。")))), role === "partner" && !auth.partner && /*#__PURE__*/React.createElement(LoginGate, {
+  }, "※本番ではお客様もログイン制になり、自分の履歴だけが表示されます。領収書の発行やお届け先の変更もここに置けます。")))), role === "partner" && !auth.partner && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(LoginGate, {
     kind: "partner"
-  }), role === "partner" && auth.partner && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement(Card, {
+    style: {
+      maxWidth: 460,
+      margin: "16px auto"
+    }
+  }, !showApply && !apDone && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowApply(true),
+    style: {
+      width: "100%",
+      border: `1.5px solid ${C.beni}`,
+      background: "#fff",
+      color: C.beniDeep,
+      borderRadius: 8,
+      padding: "11px 0",
+      fontWeight: 700,
+      fontSize: 13,
+      cursor: "pointer"
+    }
+  }, "パートナー登録を申し込む(面接があります)"), showApply && !apDone && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: serif,
+      fontSize: 16,
+      color: C.beniDeep,
+      marginBottom: 6
+    }
+  }, "パートナー申込"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.sub,
+      lineHeight: 1.8,
+      marginBottom: 10
+    }
+  }, "お申し込み後、面接のご案内をお送りします。面接を経て承認された方にのみ、専用の紹介URLとログイン情報が発行されます。"), [["お名前", apName, setApName], ["メールアドレス", apEmail, setApEmail], ["お電話番号", apPhone, setApPhone]].map(([label, val, set]) => /*#__PURE__*/React.createElement("div", {
+    key: label,
+    style: {
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.sub,
+      marginBottom: 3
+    }
+  }, label), /*#__PURE__*/React.createElement("input", {
+    value: val,
+    onChange: e => set(e.target.value),
+    style: {
+      border: `1px solid ${C.line}`,
+      borderRadius: 8,
+      padding: "9px 12px",
+      fontSize: 13,
+      width: "100%"
+    }
+  }))), /*#__PURE__*/React.createElement("button", {
+    onClick: applyPartner,
+    style: {
+      width: "100%",
+      border: "none",
+      background: C.beni,
+      color: "#fff",
+      borderRadius: 8,
+      padding: "11px 0",
+      fontWeight: 700,
+      fontSize: 13,
+      cursor: "pointer",
+      marginTop: 4
+    }
+  }, "申し込む")), apDone && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: C.green,
+      lineHeight: 1.9
+    }
+  }, "お申し込みありがとうございます。面接のご案内をメールでお送りします。承認され次第、あなた専用の紹介URLとログイン情報が発行されます。"))), role === "partner" && auth.partner && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -1413,6 +1525,78 @@ function App() {
       color: C.sub
     }
   }, "(上限なし)")))), /*#__PURE__*/React.createElement(Card, {
+    style: {
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement(SectionTitle, null, "パートナー申込・承認"), applications.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: C.sub
+    }
+  }, "現在、申込はありません。"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, applications.map(a => /*#__PURE__*/React.createElement("div", {
+    key: a.id,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      fontSize: 13,
+      flexWrap: "wrap",
+      borderBottom: `1px solid ${C.line}`,
+      paddingBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 700,
+      minWidth: 90
+    }
+  }, a.name), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.sub,
+      flex: 1,
+      minWidth: 180
+    }
+  }, a.email, " / ", a.phone || "-"), a.status === "審査待ち" ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Chip, {
+    tone: "gold"
+  }, "面接・審査待ち"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => approveApp(a.id, true),
+    style: {
+      border: "none",
+      background: C.green,
+      color: "#fff",
+      borderRadius: 8,
+      padding: "7px 14px",
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, "承認してURL発行"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => approveApp(a.id, false),
+    style: {
+      border: `1px solid ${C.gray}`,
+      background: "#fff",
+      color: C.sub,
+      borderRadius: 8,
+      padding: "7px 12px",
+      fontSize: 12,
+      cursor: "pointer"
+    }
+  }, "見送り")) : a.status.indexOf("承認済み") === 0 ? /*#__PURE__*/React.createElement(Chip, {
+    tone: "green"
+  }, a.status) : /*#__PURE__*/React.createElement(Chip, {
+    tone: "gray"
+  }, "見送り")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.sub,
+      marginTop: 10
+    }
+  }, "面接後、「承認してURL発行」を押すと新しいパートナーコードと紹介URLが自動発行され、本人へログイン設定・振込口座(Stripe Connect)登録の案内メールが届きます。承認されるまで紹介URLは存在しません。")), /*#__PURE__*/React.createElement(Card, {
     style: {
       marginBottom: 16
     }
