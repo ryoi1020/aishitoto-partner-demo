@@ -168,10 +168,6 @@ const INITIAL_PRODUCTS = [{
   tone: "#E0C09A"
 }];
 const CATS = ["すべて", "美容", "健康", "食品"];
-const DEMO_NAMES = {
-  P0102: "山田さん",
-  P0131: "佐藤さん"
-};
 const PARTNERS = [{
   code: "P0102",
   joined: "2025-04"
@@ -377,7 +373,7 @@ function App() {
       active: true,
       refBy: refCode
     }]);
-    say(refCode ? `購入完了(デモ)。${DEMO_NAMES[refCode] || refCode}(コード${refCode})のご紹介として報酬 ${yen(p.price * commRate)} を計上しました(未確定)` : "購入完了(デモ)。紹介リンク経由ではないため報酬計上はありません");
+    say(refCode ? `購入完了(デモ)。パートナー ${refCode} のご紹介として報酬 ${yen(p.price * commRate)} を計上しました(未確定)` : "購入完了(デモ)。紹介リンク経由ではないため報酬計上はありません");
   };
   const cancelSub = subId => {
     setSubs(s => s.map(x => x.id === subId ? {
@@ -742,7 +738,7 @@ function App() {
       color: "#fff",
       marginBottom: 3
     }
-  }, "山田さん"), /*#__PURE__*/React.createElement("div", {
+  }, "パートナー P0102"), /*#__PURE__*/React.createElement("div", {
     style: {
       background: "#fff",
       borderRadius: "14px 14px 14px 4px",
@@ -755,7 +751,7 @@ function App() {
     onClick: () => {
       setRefCode("P0102");
       setEntered(true);
-      say("山田さんのご紹介が自動で記録されました。コードの入力は不要です");
+      say("パートナー P0102 のご紹介が自動で記録されました。お客様によるコードの入力は不要です");
     },
     style: {
       background: "none",
@@ -832,7 +828,7 @@ function App() {
       fontSize: 13,
       lineHeight: 1.7
     }
-  }, "🎁 ", /*#__PURE__*/React.createElement("b", null, DEMO_NAMES[refCode] || "パートナー", "のご紹介"), "でお買い物いただいています。このままお買い物いただくだけでご紹介が反映されます。お手続きは不要です。")), /*#__PURE__*/React.createElement(Card, {
+  }, "🎁 ", /*#__PURE__*/React.createElement("b", null, "パートナー ", refCode, " のご紹介"), "でお買い物いただいています。このままお買い物いただくだけでご紹介が反映されます。お手続きは不要です。")), /*#__PURE__*/React.createElement(Card, {
     style: {
       marginBottom: 14,
       padding: 14
