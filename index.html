@@ -194,13 +194,6 @@ const INITIAL_RULES = [{
   dest: "各パートナーのConnectアカウント",
   active: true,
   locked: true
-}, {
-  id: "system_fee",
-  label: "システム利用料",
-  rate: 0.03,
-  dest: "開発者Connectアカウント(契約後に設定)",
-  active: false,
-  locked: false
 }];
 let seq = 100;
 const seedData = () => {
@@ -1607,7 +1600,7 @@ function App() {
         ...x,
         active: !x.active
       } : x));
-      say(r.active ? "システム利用料を無効化しました" : "システム利用料を有効化しました(実運用では契約締結後に設定)");
+      say(r.active ? `${r.label}を無効化しました` : `${r.label}を有効化しました`);
     },
     style: {
       border: `1px solid ${r.active ? C.gray : C.green}`,
