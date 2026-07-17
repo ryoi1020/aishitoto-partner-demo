@@ -168,6 +168,10 @@ const INITIAL_PRODUCTS = [{
   tone: "#E0C09A"
 }];
 const CATS = ["すべて", "美容", "健康", "食品"];
+const DEMO_NAMES = {
+  P0102: "山田さん",
+  P0131: "佐藤さん"
+};
 const PARTNERS = [{
   code: "P0102",
   joined: "2025-04"
@@ -372,7 +376,7 @@ function App() {
       active: true,
       refBy: refCode
     }]);
-    say(refCode ? `購入完了(デモ)。紹介パートナー ${refCode} に ${yen(p.price * commRate)} を計上しました(未確定)` : "購入完了(デモ)。紹介リンク経由ではないため報酬計上はありません");
+    say(refCode ? `購入完了(デモ)。${DEMO_NAMES[refCode] || refCode}(コード${refCode})のご紹介として報酬 ${yen(p.price * commRate)} を計上しました(未確定)` : "購入完了(デモ)。紹介リンク経由ではないため報酬計上はありません");
   };
   const cancelSub = subId => {
     setSubs(s => s.map(x => x.id === subId ? {
@@ -711,7 +715,42 @@ function App() {
       background: refCode ? C.greenPale : C.goldPale,
       border: "none"
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, !refCode && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 14,
+      marginBottom: 4
+    }
+  }, "🎁 ご紹介の体験(デモ)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: C.ink,
+      lineHeight: 1.7,
+      marginBottom: 10
+    }
+  }, "実際のお客様は、知人のパートナーからLINEやSNSで届く", /*#__PURE__*/React.createElement("b", null, "紹介リンクをタップするだけ"), "。 コードの入力は一切ありません。ここではその「リンクを開いた瞬間」を体験できます。"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      flexWrap: "wrap"
+    }
+  }, PARTNERS.slice(0, 2).map(p => /*#__PURE__*/React.createElement("button", {
+    key: p.code,
+    onClick: () => {
+      setRefCode(p.code);
+      say(`${DEMO_NAMES[p.code]}からの紹介リンクを開きました。以降のお買い物が自動で${DEMO_NAMES[p.code]}のご紹介になります`);
+    },
+    style: {
+      border: "none",
+      color: "#fff",
+      background: C.beni,
+      borderRadius: 8,
+      padding: "10px 16px",
+      fontSize: 13,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, DEMO_NAMES[p.code], "から届いた紹介リンクを開く")))), refCode && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 12,
@@ -722,30 +761,10 @@ function App() {
     style: {
       fontSize: 13,
       flex: 1,
-      minWidth: 220
+      minWidth: 220,
+      lineHeight: 1.7
     }
-  }, refCode ? /*#__PURE__*/React.createElement("span", null, "ご紹介経由でのお買い物です(紹介コード ", /*#__PURE__*/React.createElement("b", null, refCode), " を自動適用中)。コードのご入力は不要です。") : /*#__PURE__*/React.createElement("span", null, "紹介リンクからアクセスすると、紹介者が自動で記録されます。下のボタンでリンクを開いた状態を再現できます。")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8
-    }
-  }, !refCode && PARTNERS.slice(0, 2).map(p => /*#__PURE__*/React.createElement("button", {
-    key: p.code,
-    onClick: () => {
-      setRefCode(p.code);
-      say(`紹介リンク ?ref=${p.code} を開きました(30日間有効で記録)`);
-    },
-    style: {
-      border: `1px solid ${C.beni}`,
-      color: C.beniDeep,
-      background: "#fff",
-      borderRadius: 8,
-      padding: "7px 12px",
-      fontSize: 12,
-      fontWeight: 700,
-      cursor: "pointer"
-    }
-  }, "?ref=", p.code, " を開く")), refCode && /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("b", null, DEMO_NAMES[refCode] || "パートナー", "のご紹介"), "でお買い物中です。 このままお買い物いただくだけで、ご紹介が自動で反映されます。お手続きは何もいりません。"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setRefCode(null),
     style: {
       border: `1px solid ${C.gray}`,
@@ -756,7 +775,7 @@ function App() {
       fontSize: 12,
       cursor: "pointer"
     }
-  }, "紹介なしに戻す")))), /*#__PURE__*/React.createElement(Card, {
+  }, "紹介なしの状態に戻す(デモ)"))), /*#__PURE__*/React.createElement(Card, {
     style: {
       marginBottom: 14,
       padding: 14
