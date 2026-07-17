@@ -342,6 +342,10 @@ function App() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("すべて");
   const [sort, setSort] = useState("std");
+  const [npName, setNpName] = useState("");
+  const [npCat, setNpCat] = useState("美容");
+  const [npPrice, setNpPrice] = useState("");
+  const [npSub, setNpSub] = useState(true);
   const fileRefs = useRef({});
   const commRate = rules.find(r => r.id === "partner_comm").rate;
   const say = t => {
@@ -423,6 +427,29 @@ function App() {
       say("商品画像を登録しました。お客様画面に反映されています(本番はクラウドストレージに保存)");
     };
     reader.readAsDataURL(file);
+  };
+  const addProduct = () => {
+    const price = parseInt(npPrice, 10);
+    if (!npName.trim()) return say("商品名を入力してください");
+    if (!price || price <= 0) return say("価格を正しく入力してください");
+    const tones = {
+      "美容": "#E8B4C2",
+      "健康": "#B7D4C5",
+      "食品": "#EFE0C3"
+    };
+    const nid = Math.max.apply(null, products.map(p => p.id)) + 1;
+    setProducts(ps => [...ps, {
+      id: nid,
+      name: npName.trim(),
+      cat: npCat,
+      price: price,
+      sub: npSub,
+      img: null,
+      tone: tones[npCat]
+    }]);
+    say("「" + npName.trim() + "」を登録しました。お客様画面に表示されています(画像は商品管理から追加できます)");
+    setNpName("");
+    setNpPrice("");
   };
   const ranking = useMemo(() => {
     const m = {};
@@ -1272,6 +1299,81 @@ function App() {
       color: C.sub
     }
   }, "(上限なし)")))), /*#__PURE__*/React.createElement(Card, {
+    style: {
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement(SectionTitle, null, "商品登録"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      alignItems: "center",
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    value: npName,
+    onChange: e => setNpName(e.target.value),
+    placeholder: "商品名",
+    style: {
+      border: `1px solid ${C.line}`,
+      borderRadius: 8,
+      padding: "9px 12px",
+      fontSize: 13,
+      flex: 2,
+      minWidth: 180
+    }
+  }), /*#__PURE__*/React.createElement("select", {
+    value: npCat,
+    onChange: e => setNpCat(e.target.value),
+    style: {
+      border: `1px solid ${C.line}`,
+      borderRadius: 8,
+      padding: "9px 10px",
+      fontSize: 13,
+      background: "#fff"
+    }
+  }, /*#__PURE__*/React.createElement("option", null, "美容"), /*#__PURE__*/React.createElement("option", null, "健康"), /*#__PURE__*/React.createElement("option", null, "食品")), /*#__PURE__*/React.createElement("input", {
+    value: npPrice,
+    onChange: e => setNpPrice(e.target.value.replace(/[^0-9]/g, "")),
+    placeholder: "価格(円)",
+    inputMode: "numeric",
+    style: {
+      border: `1px solid ${C.line}`,
+      borderRadius: 8,
+      padding: "9px 12px",
+      fontSize: 13,
+      width: 110
+    }
+  }), /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: 13,
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: npSub,
+    onChange: e => setNpSub(e.target.checked)
+  }), "定期購入に対応"), /*#__PURE__*/React.createElement("button", {
+    onClick: addProduct,
+    style: {
+      background: C.beni,
+      color: "#fff",
+      border: "none",
+      borderRadius: 8,
+      padding: "10px 18px",
+      fontWeight: 700,
+      fontSize: 13,
+      cursor: "pointer"
+    }
+  }, "商品を登録")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.sub,
+      marginTop: 8
+    }
+  }, "登録するとすぐお客様画面に並びます。画像は下の商品管理から追加してください。登録点数に上限はありません。")), /*#__PURE__*/React.createElement(Card, {
     style: {
       marginBottom: 16
     }
